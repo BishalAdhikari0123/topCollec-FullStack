@@ -37,7 +37,7 @@ export default async function SeriesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allSeries.map((series: any) => (
+            {allSeries.map((series: {id: string; slug: string; title: string; description: string | null; cover_image: string | null; post_count: number}) => (
               <Link
                 key={series.id}
                 href={`/series/${series.slug}`}

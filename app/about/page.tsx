@@ -19,9 +19,9 @@ export default function AboutPage() {
 
         <h2>Our Mission</h2>
         <p>
-          To create a space where imagination thrives and curiosity is rewarded. Whether you're
+          To create a space where imagination thrives and curiosity is rewarded. Whether you&apos;re
           here for a quick escape into a fantasy world or to explore intriguing lists and facts,
-          we've got something for you.
+          we&apos;ve got something for you.
         </p>
 
         <h2>What We Publish</h2>
@@ -34,8 +34,8 @@ export default function AboutPage() {
 
         <h2>Get Involved</h2>
         <p>
-          We're always looking for talented writers and contributors. If you have a story to tell
-          or a list to share, we'd love to hear from you.
+          We&apos;re always looking for talented writers and contributors. If you have a story to tell
+          or a list to share, we&apos;d love to hear from you.
         </p>
       </div>
     </div>

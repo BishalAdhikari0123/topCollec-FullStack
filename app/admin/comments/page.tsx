@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { approveComment } from '@/lib/actions/comments'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata = {
   title: 'Manage Comments',
@@ -13,10 +14,7 @@ export default async function CommentsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  console.log('🔍 Admin page - User:', user?.id)
-
   if (!user) {
-    console.log('❌ No user found, redirecting to login')
     redirect('/login?redirectTo=/admin/comments')
   }
 
@@ -27,33 +25,20 @@ export default async function CommentsPage() {
     .eq('id', user.id)
     .single()
 
-  console.log('👤 Admin page - Profile:', profile)
-  console.log('❗ Profile Error:', profileError)
-
   if (profileError) {
-    console.error('❌ Error fetching profile:', profileError)
-    // Profile doesn't exist - create it with is_admin = false
-    const { error: insertError } = await supabase
+    await supabase
       .from('profiles')
       .insert({ id: user.id, is_admin: false })
-    
-    if (insertError) {
-      console.error('❌ Error creating profile:', insertError)
-    }
-    
-    console.log('⚠️ Profile not found or not admin, redirecting home')
     redirect('/')
   }
 
   if (!profile?.is_admin) {
-    console.log('⚠️ Not admin (is_admin:', profile?.is_admin, '), redirecting home')
     redirect('/')
   }
-  
-  console.log('✅ User is admin, loading page')
 
-  // Get all comments with post information
-  let { data: comments, error: commentsError } = await supabase
+  // Get all comments with post info
+  let allComments
+  const { data: comments, error: commentsError } = await supabase
     .from('comments')
     .select(`
       id,
@@ -74,9 +59,7 @@ export default async function CommentsPage() {
     .order('created_at', { ascending: false })
     .limit(100)
 
-  // If profiles join fails, try without it
   if (commentsError) {
-    console.warn('Profiles join failed, fetching without profiles:', commentsError.message)
     const result = await supabase
       .from('comments')
       .select(`
@@ -94,44 +77,47 @@ export default async function CommentsPage() {
       .order('created_at', { ascending: false })
       .limit(100)
     
-    // Add empty profiles array to match expected type
-    comments = result.data?.map(comment => ({ ...comment, profiles: [] })) || null
+    allComments = result.data?.map(c => ({ ...c, profiles: [] })) || []
+  } else {
+    allComments = comments || []
   }
 
-  // Get comment likes count (with error handling)
-  let likesData: any[] = []
+  // Comment likes count
+  let likesData: Array<{ comment_id: string; is_like: boolean }> = []
   try {
     const { data } = await supabase
       .from('comment_likes')
       .select('comment_id, is_like')
     likesData = data || []
-  } catch (error) {
+  } catch {
     console.warn('comment_likes table not found')
   }
 
   const getLikeStats = (commentId: string) => {
-    const commentLikes = likesData?.filter(l => l.comment_id === commentId) || []
+    const commentLikes = likesData.filter(l => l.comment_id === commentId)
     const likes = commentLikes.filter(l => l.is_like).length
     const dislikes = commentLikes.filter(l => !l.is_like).length
     return { likes, dislikes }
   }
 
-  const pendingComments = comments?.filter(c => !c.is_approved) || []
-  const approvedComments = comments?.filter(c => c.is_approved) || []
+  interface CommentData {
+    id: string
+    body: string
+    created_at: string
+    author_name: string
+    is_approved: boolean
+    posts: Array<{ id: string; title: string; slug: string }>
+    profiles: Array<{ name: string; avatar_url: string | null }>
+  }
 
-  // Debug logging
-  console.log('Admin comments page:', {
-    totalComments: comments?.length,
-    pending: pendingComments.length,
-    approved: approvedComments.length,
-    hasError: !!commentsError
-  })
+  const pendingComments = allComments.filter((c: CommentData) => !c.is_approved)
+  const approvedComments = allComments.filter((c: CommentData) => c.is_approved)
 
   return (
     <div className="min-h-screen bg-[#121212] relative">
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-pink-900/10"></div>
       
-      <div className="container mx-auto px-4 py-12 relative">`
+      <div className="container mx-auto px-4 py-12 relative">
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-5xl md:text-6xl font-black text-gradient-grunge uppercase tracking-tight mb-4">
@@ -144,11 +130,12 @@ export default async function CommentsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {/** Total Comments */}
           <div className="card-grunge p-6 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm font-bold uppercase tracking-wide mb-2">Total Comments</p>
-                <p className="text-4xl font-black text-white">{comments?.length || 0}</p>
+                <p className="text-4xl font-black text-white">{allComments.length}</p>
               </div>
               <div className="p-4 bg-purple-500/20 rounded-xl border-2 border-purple-500/30">
                 <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,6 +145,7 @@ export default async function CommentsPage() {
             </div>
           </div>
 
+          {/** Pending */}
           <div className="card-grunge p-6 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
@@ -172,6 +160,7 @@ export default async function CommentsPage() {
             </div>
           </div>
 
+          {/** Approved */}
           <div className="card-grunge p-6 rounded-xl">
             <div className="flex items-center justify-between">
               <div>
@@ -194,19 +183,21 @@ export default async function CommentsPage() {
               Pending Approval
             </h2>
             <div className="space-y-4">
-              {pendingComments.map((comment: any) => {
+              {pendingComments.map((comment: CommentData) => {
                 const { likes, dislikes } = getLikeStats(comment.id)
                 const profile = Array.isArray(comment.profiles) ? comment.profiles[0] : comment.profiles
                 const post = Array.isArray(comment.posts) ? comment.posts[0] : comment.posts
-                
+
                 return (
                   <div key={comment.id} className="card-grunge p-6 rounded-xl animate-fadeIn">
                     <div className="flex gap-4">
                       <div className="flex-shrink-0">
                         {profile?.avatar_url ? (
-                          <img
+                          <Image
                             src={profile.avatar_url}
                             alt={comment.author_name}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 rounded-full border-2 border-yellow-500/50"
                           />
                         ) : (
@@ -231,7 +222,7 @@ export default async function CommentsPage() {
                               href={`/posts/${post.slug}`}
                               className="text-purple-400 hover:text-pink-400 text-sm font-bold transition-colors"
                             >
-                              on "{post.title}"
+                              on &quot;{post.title}&quot;
                             </Link>
                           )}
                         </div>
@@ -252,7 +243,14 @@ export default async function CommentsPage() {
                             {dislikes}
                           </span>
 
-                          <form action={approveComment.bind(null, comment.id)} className="ml-auto">
+                          {/* Fixed form action */}
+                          <form
+                            action={async () => {
+                              'use server'
+                              await approveComment(comment.id)
+                            }}
+                            className="ml-auto"
+                          >
                             <button
                               type="submit"
                               className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-black uppercase text-sm rounded-lg transition-all"
@@ -284,19 +282,21 @@ export default async function CommentsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {approvedComments.map((comment: any) => {
+              {approvedComments.map((comment: CommentData) => {
                 const { likes, dislikes } = getLikeStats(comment.id)
                 const profile = Array.isArray(comment.profiles) ? comment.profiles[0] : comment.profiles
                 const post = Array.isArray(comment.posts) ? comment.posts[0] : comment.posts
-                
+
                 return (
                   <div key={comment.id} className="card-grunge p-6 rounded-xl animate-fadeIn">
                     <div className="flex gap-4">
                       <div className="flex-shrink-0">
                         {profile?.avatar_url ? (
-                          <img
+                          <Image
                             src={profile.avatar_url}
                             alt={comment.author_name}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 rounded-full border-2 border-purple-500/30"
                           />
                         ) : (
@@ -321,7 +321,7 @@ export default async function CommentsPage() {
                               href={`/posts/${post.slug}`}
                               className="text-purple-400 hover:text-pink-400 text-sm font-bold transition-colors"
                             >
-                              on "{post.title}"
+                              on &quot;{post.title}&quot;
                             </Link>
                           )}
                         </div>

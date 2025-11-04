@@ -297,7 +297,17 @@ export async function getPopularTags(limit: number = 10) {
   return tagsWithCount.sort((a, b) => b.post_count - a.post_count)
 }
 
-export async function createPost(postData: any) {
+interface PostData {
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  featured_image?: string
+  status: string
+  tagIds?: string[]
+}
+
+export async function createPost(postData: PostData) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -343,7 +353,7 @@ export async function createPost(postData: any) {
   return newPost
 }
 
-export async function updatePost(postId: string, postData: any) {
+export async function updatePost(postId: string, postData: PostData) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()

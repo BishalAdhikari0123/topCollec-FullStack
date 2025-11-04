@@ -32,14 +32,14 @@ export async function GET() {
     ${
       posts
         ?.map(
-          (post: any) => `
+          (post: {title: string; slug: string; excerpt: string | null; content: string; published_at: string; profiles?: Array<{display_name: string}>}) => `
     <item>
       <title><![CDATA[${post.title}]]></title>
       <link>${SITE_URL}/posts/${post.slug}</link>
       <guid isPermaLink="true">${SITE_URL}/posts/${post.slug}</guid>
       <description><![CDATA[${post.excerpt || post.content.substring(0, 200)}]]></description>
       <pubDate>${new Date(post.published_at).toUTCString()}</pubDate>
-      <author>${post.profiles?.display_name || 'Unknown'}</author>
+      <author>${post.profiles?.[0]?.display_name || 'Unknown'}</author>
     </item>
     `
         )

@@ -19,7 +19,7 @@ interface SeriesNavigationProps {
     slug: string
     series_order: number
   } | null
-  currentOrder: number
+  currentOrder?: number
   currentIndex: number
   totalPosts: number
 }
@@ -28,7 +28,6 @@ export default function SeriesNavigation({
   series,
   previous,
   next,
-  currentOrder,
   currentIndex,
   totalPosts
 }: SeriesNavigationProps) {

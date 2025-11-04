@@ -15,6 +15,36 @@ export default async function HomePage({
   const { posts, totalPages } = await getPublishedPosts(page)
   const popularTags = await getPopularTags(15)
 
+  // Map posts to correct types for PostCard
+  const mappedPosts = posts.map(post => ({
+    ...post,
+    id: String(post.id),
+    slug: String(post.slug),
+    title: String(post.title),
+    excerpt: post.excerpt ? String(post.excerpt) : null,
+    featured_image: post.featured_image ? String(post.featured_image) : null,
+    published_at: String(post.published_at),
+    reading_time: post.reading_time ? Number(post.reading_time) : null,
+    views: post.views ? Number(post.views) : 0,
+    // profiles can be a single object or an array depending on the join; normalize to array of objects
+    profiles: post.profiles
+      ? (Array.isArray(post.profiles) ? post.profiles : [post.profiles]).map(
+          (p: { display_name: string; avatar_url: string | null }) => ({
+            display_name: String(p.display_name),
+            avatar_url: p.avatar_url ? String(p.avatar_url) : null,
+          })
+        )
+      : undefined,
+    // Normalize tags to an array before mapping
+    post_tags: post.post_tags?.map((pt: { tags: Array<{ id: string; name: string; slug: string }> | { id: string; name: string; slug: string } }) => ({
+      tags: (Array.isArray(pt.tags) ? pt.tags : [pt.tags]).map((t) => ({
+        id: String(t.id),
+        name: String(t.name),
+        slug: String(t.slug),
+      })),
+    })),
+  }))
+
   return (
     <div className="min-h-screen bg-[#121212] relative">
       <div className="container mx-auto px-4 py-16 max-w-7xl">
@@ -35,7 +65,7 @@ export default async function HomePage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Main content */}
           <div className="lg:col-span-2">
-            {posts.length === 0 ? (
+            {mappedPosts.length === 0 ? (
               <div className="text-center py-32 card-grunge rounded-3xl animate-fadeIn grunge-texture">
                 <div className="animate-float">
                   <svg className="w-32 h-32 mx-auto text-purple-900/50 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,7 +80,7 @@ export default async function HomePage({
             ) : (
               <>
                 <div className="space-y-8">
-                  {posts.map((post: any, index: number) => (
+                  {mappedPosts.map((post, index: number) => (
                     <div 
                       key={post.id} 
                       className="animate-slideIn"
@@ -70,7 +100,7 @@ export default async function HomePage({
             )}
           </div>
 
-          {/* Sidebar with Grunge Style */}
+          {/* Sidebar */}
           <aside className="lg:col-span-1">
             <div className="sticky top-28 space-y-8">
               <div className="card-grunge rounded-2xl p-8 animate-slideInRight grunge-texture overflow-hidden relative">

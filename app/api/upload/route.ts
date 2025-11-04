@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       .getPublicUrl(data.path)
 
     return NextResponse.json({ url: publicUrl }, { status: 200 })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

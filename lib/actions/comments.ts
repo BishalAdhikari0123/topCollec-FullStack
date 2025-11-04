@@ -66,8 +66,8 @@ export async function getCommentsByPostId(postId: string) {
 
   // Get like counts for all comments
   const commentIds = comments?.map(c => c.id) || []
-  let likes: any[] = []
-  let userLikes: any[] = []
+  let likes: Array<{ comment_id: string; is_like: boolean }> = []
+  let userLikes: Array<{ comment_id: string; is_like: boolean }> = []
   
   // Only fetch likes if comment_likes table exists (graceful fallback)
   try {
@@ -86,7 +86,7 @@ export async function getCommentsByPostId(postId: string) {
         .eq('user_id', user.id)
       userLikes = userLikesData || []
     }
-  } catch (error) {
+  } catch {
     console.warn('comment_likes table not found - likes feature disabled. Run migration to enable.')
   }
 

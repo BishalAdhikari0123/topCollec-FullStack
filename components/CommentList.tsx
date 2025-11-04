@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { formatDate } from '@/lib/utils'
 
-interface Comment {
+interface CommentData {
   id: string
   body: string
   created_at: string
@@ -13,7 +13,7 @@ interface Comment {
 }
 
 interface CommentListProps {
-  comments: any[]
+  comments: CommentData[]
 }
 
 export default function CommentList({ comments }: CommentListProps) {

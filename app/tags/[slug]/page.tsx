@@ -40,6 +40,29 @@ export default async function TagPage({
     notFound()
   }
 
+  // Map posts to match PostCardProps type
+  const mappedPosts = posts.map((post: any) => ({
+    id: String(post.id),
+    slug: String(post.slug),
+    title: String(post.title),
+    excerpt: post.excerpt ? String(post.excerpt) : null,
+    featured_image: post.featured_image ? String(post.featured_image) : null,
+    published_at: post.published_at ? String(post.published_at) : new Date().toISOString(),
+    reading_time: post.reading_time ? Number(post.reading_time) : null,
+    views: post.views ? Number(post.views) : 0,
+    profiles: post.profiles?.map((p: any) => ({
+      display_name: String(p.display_name),
+      avatar_url: p.avatar_url ? String(p.avatar_url) : null,
+    })),
+    post_tags: post.post_tags?.map((pt: any) => ({
+      tags: pt.tags.map((t: any) => ({
+        id: String(t.id),
+        name: String(t.name),
+        slug: String(t.slug),
+      })),
+    })),
+  }))
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">
@@ -49,7 +72,7 @@ export default async function TagPage({
         {posts.length} {posts.length === 1 ? 'post' : 'posts'}
       </p>
 
-      {posts.length === 0 ? (
+      {mappedPosts.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400">
             No posts found with this tag.
@@ -58,7 +81,7 @@ export default async function TagPage({
       ) : (
         <>
           <div className="space-y-8">
-            {posts.map((post: any) => (
+            {mappedPosts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>

@@ -3,12 +3,32 @@ import Image from 'next/image'
 import { formatDate } from '@/lib/utils'
 
 interface PostCardProps {
-  post: any
+  post: {
+    id: string
+    slug: string
+    title: string
+    excerpt: string | null
+    featured_image: string | null
+    published_at: string
+    reading_time: number | null
+    views: number
+    profiles?: Array<{
+      display_name: string
+      avatar_url: string | null
+    }>
+    post_tags?: Array<{
+      tags: Array<{
+        id: string
+        name: string
+        slug: string
+      }>
+    }>
+  }
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const author = post.profiles
-  const tags = post.post_tags?.map((pt: any) => pt.tags).filter(Boolean) || []
+  const author = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles
+  const tags = post.post_tags?.flatMap((pt) => pt.tags).filter(Boolean) || []
 
   return (
     <article className="group card-grunge rounded-3xl overflow-hidden grunge-texture relative">
@@ -96,7 +116,7 @@ export default function PostCard({ post }: PostCardProps) {
 
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t-2 border-gray-800/50">
-            {tags.slice(0, 4).map((tag: any) => (
+            {tags.slice(0, 4).map((tag: {id: string; name: string; slug: string}) => (
               <Link
                 key={tag.id}
                 href={`/tags/${tag.slug}`}

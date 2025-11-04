@@ -7,11 +7,14 @@ export const metadata = {
   description: 'Create your TopCollec account',
 }
 
-export default function SignUpPage({
+export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: { error?: string }
+  searchParams: Promise<{ error?: string }>
 }) {
+  const params = await searchParams
+  const errorMessage = params.error
+
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background effects */}
@@ -40,10 +43,10 @@ export default function SignUpPage({
           </p>
         </div>
 
-        {searchParams.error && (
+        {errorMessage && (
           <div className="card-grunge p-4 border-2 border-red-500/50 bg-red-500/10 animate-slideIn">
             <p className="text-red-400 text-sm font-bold text-center">
-              ⚠ {searchParams.error}
+              ⚠ {errorMessage}
             </p>
           </div>
         )}

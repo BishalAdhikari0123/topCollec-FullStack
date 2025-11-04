@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { getPostBySlug, getRelatedPosts, getAllTags } from '@/lib/actions/posts'
+import { getPostBySlug, getRelatedPosts } from '@/lib/actions/posts'
 import { getCommentsByPostId } from '@/lib/actions/comments'
 import { getPostSeriesNavigation } from '@/lib/actions/series'
 import { formatDate } from '@/lib/utils'
@@ -12,10 +12,65 @@ import { SITE_NAME, SITE_URL } from '@/lib/constants'
 import CommentsSection from '@/components/CommentsSection'
 import SeriesNavigation from '@/components/SeriesNavigation'
 
-// Force dynamic rendering to always check authentication
+// Force dynamic rendering
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+// --- Types ---
+type Profile = {
+  id: string
+  display_name: string
+  avatar_url?: string | null
+  bio?: string
+}
+
+type Tag = {
+  id: string
+  name: string
+  slug: string
+}
+
+type PostTag = {
+  tags: Tag
+}
+
+type Post = {
+  id: string
+  title: string
+  slug: string
+  excerpt?: string | null
+  content: string
+  featured_image?: string | null
+  published_at: string
+  updated_at: string
+  reading_time?: number | null
+  views?: number
+  profiles?: Profile
+  post_tags?: PostTag[]
+}
+
+type SeriesItem = {
+  id: string
+  title: string
+  slug: string
+}
+
+type SeriesNavItem = {
+  title: string
+  slug: string
+  series_order: number
+}
+
+type SeriesNav = {
+  series: SeriesItem[]
+  previous: SeriesNavItem | null
+  next: SeriesNavItem | null
+  currentOrder: number
+  currentIndex: number
+  totalPosts: number
+}
+
+// --- Metadata ---
 export async function generateMetadata({
   params,
 }: {
@@ -25,9 +80,7 @@ export async function generateMetadata({
   const post = await getPostBySlug(slug)
 
   if (!post) {
-    return {
-      title: 'Post Not Found',
-    }
+    return { title: 'Post Not Found' }
   }
 
   return {
@@ -51,30 +104,58 @@ export async function generateMetadata({
   }
 }
 
-export async function generateStaticParams() {
-  // Generate static params for top posts
-  // In production, you might want to limit this
-  return []
-}
-
+// --- Page ---
 export default async function PostPage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const post = await getPostBySlug(slug)
+  const post: Post | null = await getPostBySlug(slug)
 
-  if (!post) {
-    notFound()
-  }
+  if (!post) notFound()
 
-  const tags = post.post_tags?.map((pt: any) => pt.tags).filter(Boolean) || []
-  const tagIds = tags.map((tag: any) => tag.id)
+  // --- Tags ---
+  const tags: Tag[] = post.post_tags?.map(pt => pt.tags).filter(Boolean) || []
+
+  // --- Related Posts ---
+  const tagIds = tags.map(tag => tag.id)
   const relatedPosts = await getRelatedPosts(post.id, tagIds)
-  const comments = await getCommentsByPostId(post.id)
-  const seriesNav = await getPostSeriesNavigation(post.id)
 
+  // --- Comments ---
+  const comments = await getCommentsByPostId(post.id)
+
+  // --- Series Navigation ---
+  const seriesNavRaw = await getPostSeriesNavigation(post.id)
+
+  const seriesNav: SeriesNav | null = seriesNavRaw
+    ? {
+        series: (seriesNavRaw.series || []).map((s: any) => ({
+          id: String(s.id),
+          title: String(s.title),
+          slug: String(s.slug),
+        })),
+        previous: seriesNavRaw.previous
+          ? {
+              title: String((seriesNavRaw.previous as any).title),
+              slug: String((seriesNavRaw.previous as any).slug),
+              series_order: Number((seriesNavRaw.previous as any).series_order),
+            }
+          : null,
+        next: seriesNavRaw.next
+          ? {
+              title: String((seriesNavRaw.next as any).title),
+              slug: String((seriesNavRaw.next as any).slug),
+              series_order: Number((seriesNavRaw.next as any).series_order),
+            }
+          : null,
+        currentOrder: Number(seriesNavRaw.currentOrder),
+        currentIndex: Number(seriesNavRaw.currentIndex),
+        totalPosts: Number(seriesNavRaw.totalPosts),
+      }
+    : null
+
+  // --- JSON-LD ---
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -108,7 +189,7 @@ export default async function PostPage({
         {/* Series Navigation */}
         {seriesNav && (
           <SeriesNavigation
-            series={seriesNav.series}
+            series={seriesNav.series[seriesNav.currentIndex]}
             previous={seriesNav.previous}
             next={seriesNav.next}
             currentOrder={seriesNav.currentOrder}
@@ -119,9 +200,7 @@ export default async function PostPage({
 
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-            {post.title}
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">{post.title}</h1>
 
           <div className="flex items-center gap-4 text-gray-400 mb-6">
             {post.profiles && (
@@ -139,9 +218,7 @@ export default async function PostPage({
                       className="rounded-full"
                     />
                   )}
-                  <span className="font-medium">
-                    {post.profiles.display_name || 'Anonymous'}
-                  </span>
+                  <span className="font-medium">{post.profiles.display_name || 'Anonymous'}</span>
                 </Link>
                 <span>•</span>
               </>
@@ -159,7 +236,7 @@ export default async function PostPage({
 
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
-              {tags.map((tag: any) => (
+              {tags.map(tag => (
                 <Link
                   key={tag.id}
                   href={`/tags/${tag.slug}`}
@@ -175,13 +252,7 @@ export default async function PostPage({
         {/* Featured Image */}
         {post.featured_image && (
           <div className="relative w-full h-96 mb-8 rounded-lg overflow-hidden">
-            <Image
-              src={post.featured_image}
-              alt={post.title}
-              fill
-              className="object-cover"
-              priority
-            />
+            <Image src={post.featured_image} alt={post.title} fill className="object-cover" priority />
           </div>
         )}
 
@@ -191,11 +262,9 @@ export default async function PostPage({
         </div>
 
         {/* Author Bio */}
-        {post.profiles && post.profiles.bio && (
+        {post.profiles?.bio && (
           <div className="border-t border-gray-800 pt-8 mb-12">
-            <h3 className="text-2xl font-bold mb-4 text-white">
-              About the Author
-            </h3>
+            <h3 className="text-2xl font-bold mb-4 text-white">About the Author</h3>
             <div className="flex gap-4">
               {post.profiles.avatar_url && (
                 <Image
@@ -226,24 +295,20 @@ export default async function PostPage({
               Related Posts
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedPosts.map((relatedPost: any) => (
-                <Link
-                  key={relatedPost.id}
-                  href={`/posts/${relatedPost.slug}`}
-                  className="group"
-                >
-                  {relatedPost.featured_image && (
+              {relatedPosts.map(rp => (
+                <Link key={rp.id} href={`/posts/${rp.slug}`} className="group">
+                  {rp.featured_image && (
                     <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden">
                       <Image
-                        src={relatedPost.featured_image}
-                        alt={relatedPost.title}
+                        src={rp.featured_image}
+                        alt={rp.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform"
                       />
                     </div>
                   )}
                   <h4 className="font-semibold text-white group-hover:text-purple-400 transition-colors">
-                    {relatedPost.title}
+                    {rp.title}
                   </h4>
                 </Link>
               ))}

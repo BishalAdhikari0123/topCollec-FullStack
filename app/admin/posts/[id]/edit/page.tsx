@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PostEditor } from '@/components/admin'
 
-export default async function EditPostPage({ params }: { params: { id: string } }) {
+export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -14,7 +15,7 @@ export default async function EditPostPage({ params }: { params: { id: string } 
   const { data: post } = await supabase
     .from('posts')
     .select('*, post_tags(tag_id)')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('author_id', user.id)
     .single()
 
@@ -29,7 +30,7 @@ export default async function EditPostPage({ params }: { params: { id: string } 
     .order('name')
 
   // Extract selected tag IDs
-  const selectedTagIds = post.post_tags?.map((pt: any) => pt.tag_id) || []
+  const selectedTagIds = post.post_tags?.map((pt: { tag_id: string }) => pt.tag_id) || []
 
   return (
     <div className="min-h-screen bg-[#121212] relative">

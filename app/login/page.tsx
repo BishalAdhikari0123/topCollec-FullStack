@@ -7,11 +7,15 @@ export const metadata = {
   description: 'Sign in to your TopCollec account',
 }
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { signup?: string; error?: string }
+  searchParams: Promise<{ signup?: string; error?: string }>
 }) {
+  const params = await searchParams
+  const showSignupMessage = params.signup === 'success'
+  const errorMessage = params.error
+
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background effects */}
@@ -40,7 +44,7 @@ export default function LoginPage({
           </p>
         </div>
 
-        {searchParams.signup === 'success' && (
+        {showSignupMessage && (
           <div className="card-grunge p-4 border-2 border-green-500/50 bg-green-500/10 animate-slideIn">
             <p className="text-green-400 text-sm font-bold text-center">
               ✓ Account created! Please sign in.
@@ -48,10 +52,10 @@ export default function LoginPage({
           </div>
         )}
 
-        {searchParams.error && (
+        {errorMessage && (
           <div className="card-grunge p-4 border-2 border-red-500/50 bg-red-500/10 animate-slideIn">
             <p className="text-red-400 text-sm font-bold text-center">
-              ⚠ {searchParams.error}
+              ⚠ {errorMessage}
             </p>
           </div>
         )}
@@ -100,7 +104,7 @@ export default function LoginPage({
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-400">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/signup" className="text-purple-400 hover:text-pink-400 font-bold transition-colors">
                 Sign up
               </Link>

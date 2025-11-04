@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createComment } from '@/lib/actions/comments'
+import { createCommentAction } from '@/lib/actions/comments'
 import { createClient } from '@/lib/supabase/client'
 
 interface CommentFormProps {
@@ -18,33 +18,32 @@ export default function CommentForm({ postId }: CommentFormProps) {
 
   const supabase = createClient()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError('')
-    setSuccess(false)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsSubmitting(true)
+  setError('')
+  setSuccess(false)
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const formData = new FormData()
+    formData.append('postId', postId)
+    formData.append('body', body)
+    formData.append('name', name)
+    formData.append('email', email)
 
-      await createComment({
-        postId,
-        body,
-        authorName: user ? undefined : name,
-        authorEmail: user ? undefined : email,
-        authorId: user?.id,
-      })
+    await createCommentAction(formData)
 
-      setSuccess(true)
-      setBody('')
-      setName('')
-      setEmail('')
-    } catch (err) {
-      setError('Failed to submit comment. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    setSuccess(true)
+    setBody('')
+    setName('')
+    setEmail('')
+  } catch {
+    setError('Failed to submit comment. Please try again.')
+  } finally {
+    setIsSubmitting(false)
   }
+}
+
 
   return (
     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">

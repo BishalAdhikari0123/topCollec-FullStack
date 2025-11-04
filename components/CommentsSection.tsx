@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import { likeComment, deleteComment, createCommentAction } from '@/lib/actions/comments'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -90,25 +91,25 @@ function CommentItem({
           </div>
         )}
 
-        <div className="flex gap-4">
-          {/* Avatar */}
-          <div className="flex-shrink-0">
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={comment.author_name}
-                className="w-12 h-12 rounded-full border-2 border-purple-500/30 group-hover:border-purple-500 transition-all"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center border-2 border-purple-500/30 group-hover:border-purple-500 transition-all">
-                <span className="text-white font-black text-lg">
-                  {comment.author_name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
+          <div className="flex gap-4">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              {profile?.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt={comment.author_name}
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 rounded-full border-2 border-purple-500/30 group-hover:border-purple-500 transition-all"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center border-2 border-purple-500/30 group-hover:border-purple-500 transition-all">
+                  <span className="text-white font-black text-lg">
+                    {comment.author_name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>          {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
               <h4 className="font-black text-white text-lg">

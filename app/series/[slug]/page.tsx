@@ -80,7 +80,7 @@ export default async function SeriesDetailPage({
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                     </svg>
                     <span className="text-gray-400 font-medium">
-                      By {series.profiles.display_name || 'Anonymous'}
+                      By {(series.profiles.map((p: { display_name?: string | null }) => p.display_name).filter(Boolean).join(', ')) || 'Anonymous'}
                     </span>
                   </div>
                 )}
@@ -122,7 +122,7 @@ export default async function SeriesDetailPage({
             </div>
           ) : (
             <div className="space-y-4">
-              {posts.map((post: any, index: number) => (
+              {posts.map((post: {id: string; slug: string; title: string; excerpt: string | null; series_order: number | null; published_at: string; reading_time: number | null; views: number}, index: number) => (
                 <Link
                   key={post.id}
                   href={`/posts/${post.slug}`}
