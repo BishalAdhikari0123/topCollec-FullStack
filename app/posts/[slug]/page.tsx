@@ -70,6 +70,16 @@ type SeriesNav = {
   totalPosts: number
 }
 
+// Raw shape returned by getPostSeriesNavigation
+type SeriesNavRaw = {
+  series: { id: string | number; title: string; slug: string } | Array<{ id: string | number; title: string; slug: string }>
+  previous: { title: string; slug: string; series_order: number } | null
+  next: { title: string; slug: string; series_order: number } | null
+  currentOrder: number
+  currentIndex: number
+  totalPosts: number
+}
+
 // --- Metadata ---
 export async function generateMetadata({
   params,
@@ -126,27 +136,31 @@ export default async function PostPage({
   const comments = await getCommentsByPostId(post.id)
 
   // --- Series Navigation ---
-  const seriesNavRaw = await getPostSeriesNavigation(post.id)
+  const seriesNavRaw = (await getPostSeriesNavigation(post.id)) as SeriesNavRaw | null
 
   const seriesNav: SeriesNav | null = seriesNavRaw
     ? {
-        series: (seriesNavRaw.series || []).map((s: any) => ({
+        series: (
+          Array.isArray(seriesNavRaw.series)
+            ? seriesNavRaw.series
+            : [seriesNavRaw.series]
+        ).map((s) => ({
           id: String(s.id),
           title: String(s.title),
           slug: String(s.slug),
         })),
         previous: seriesNavRaw.previous
           ? {
-              title: String((seriesNavRaw.previous as any).title),
-              slug: String((seriesNavRaw.previous as any).slug),
-              series_order: Number((seriesNavRaw.previous as any).series_order),
+              title: String(seriesNavRaw.previous.title),
+              slug: String(seriesNavRaw.previous.slug),
+              series_order: Number(seriesNavRaw.previous.series_order),
             }
           : null,
         next: seriesNavRaw.next
           ? {
-              title: String((seriesNavRaw.next as any).title),
-              slug: String((seriesNavRaw.next as any).slug),
-              series_order: Number((seriesNavRaw.next as any).series_order),
+              title: String(seriesNavRaw.next.title),
+              slug: String(seriesNavRaw.next.slug),
+              series_order: Number(seriesNavRaw.next.series_order),
             }
           : null,
         currentOrder: Number(seriesNavRaw.currentOrder),

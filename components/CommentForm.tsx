@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createCommentAction } from '@/lib/actions/comments'
-import { createClient } from '@/lib/supabase/client'
 
 interface CommentFormProps {
   postId: string
@@ -16,7 +15,6 @@ export default function CommentForm({ postId }: CommentFormProps) {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
-  const supabase = createClient()
 
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()

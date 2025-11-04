@@ -13,28 +13,42 @@ export default async function SearchResultsPage({
   const page = Number(params.page) || 1
   const { posts, totalPages } = await searchPosts(query, page)
 
-  // Map posts to match PostCardProps type
-  const mappedPosts = posts.map((post: any) => ({
-    id: String(post.id),
-    slug: String(post.slug),
-    title: String(post.title),
-    excerpt: post.excerpt ? String(post.excerpt) : null,
-    featured_image: post.featured_image ? String(post.featured_image) : null,
-    published_at: post.published_at ? String(post.published_at) : new Date().toISOString(),
-    reading_time: post.reading_time ? Number(post.reading_time) : null,
-    views: post.views ? Number(post.views) : 0,
-    profiles: post.profiles?.map((p: any) => ({
-      display_name: String(p.display_name),
-      avatar_url: p.avatar_url ? String(p.avatar_url) : null,
-    })),
-    post_tags: post.post_tags?.map((pt: any) => ({
-      tags: pt.tags.map((t: any) => ({
-        id: String(t.id),
-        name: String(t.name),
-        slug: String(t.slug),
-      })),
-    })),
-  }))
+  // Types reflecting the searchPosts selection
+  type AuthorProfile = { display_name: string; avatar_url: string | null }
+  type SearchPost = {
+    id: string | number
+    slug: string
+    title: string
+    excerpt?: string | null
+    featured_image?: string | null
+    published_at?: string
+    reading_time?: number | null
+    views?: number | null
+    profiles?: AuthorProfile | AuthorProfile[]
+  }
+
+  // Map posts to PostCard input while normalizing shapes (profiles can be object or array)
+  const mappedPosts = (posts as SearchPost[]).map((post) => {
+    const profilesArray = post.profiles
+      ? (Array.isArray(post.profiles) ? post.profiles : [post.profiles]).map((p) => ({
+          display_name: String(p.display_name),
+          avatar_url: p.avatar_url ? String(p.avatar_url) : null,
+        }))
+      : undefined
+
+    return {
+      id: String(post.id),
+      slug: String(post.slug),
+      title: String(post.title),
+      excerpt: post.excerpt ? String(post.excerpt) : null,
+      featured_image: post.featured_image ? String(post.featured_image) : null,
+      published_at: post.published_at ? String(post.published_at) : new Date().toISOString(),
+      reading_time: post.reading_time != null ? Number(post.reading_time) : null,
+      views: post.views != null ? Number(post.views) : 0,
+      profiles: profilesArray,
+      // searchPosts does not return tags; omit post_tags
+    }
+  })
 
   return (
     <div className="container mx-auto px-4 py-8">
