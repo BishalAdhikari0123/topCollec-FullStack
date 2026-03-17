@@ -81,11 +81,11 @@ function CommentItem({
 
   return (
     <div className={`${isReply ? 'ml-12' : ''} animate-fadeIn`}>
-      <div className="card-grunge p-6 rounded-xl relative overflow-hidden group">
+      <div className="bg-neutral-50 dark:bg-neutral-900 p-6 rounded-xl relative overflow-hidden group border border-neutral-200 dark:border-neutral-800">
         {/* Author Badge */}
         {isPostAuthor && (
           <div className="absolute top-2 right-2">
-            <span className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-black uppercase tracking-wider rounded-full border-2 border-purple-400/50 shadow-lg shadow-purple-500/50 animate-pulse-glow">
+            <span className="px-3 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-wider rounded-full border-2 border-neutral-300 dark:border-neutral-700">
               ✨ Author
             </span>
           </div>
@@ -100,11 +100,11 @@ function CommentItem({
                   alt={comment.author_name}
                   width={48}
                   height={48}
-                  className="w-12 h-12 rounded-full border-2 border-purple-500/30 group-hover:border-purple-500 transition-all"
+                  className="w-12 h-12 rounded-full border-2 border-neutral-300 dark:border-neutral-700 group-hover:border-neutral-400 dark:group-hover:border-neutral-600 transition-all"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center border-2 border-purple-500/30 group-hover:border-purple-500 transition-all">
-                  <span className="text-white font-black text-lg">
+                <div className="w-12 h-12 rounded-full bg-black dark:bg-white flex items-center justify-center border-2 border-neutral-300 dark:border-neutral-700 group-hover:border-neutral-400 dark:group-hover:border-neutral-600 transition-all">
+                  <span className="text-white dark:text-black font-bold text-lg">
                     {comment.author_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -112,15 +112,15 @@ function CommentItem({
             </div>          {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <h4 className="font-black text-white text-lg">
+              <h4 className="font-bold text-black dark:text-white text-lg">
                 {profile?.name || comment.author_name}
               </h4>
-              <span className="text-gray-500 text-sm font-medium">
+              <span className="text-neutral-500 dark:text-neutral-400 text-sm font-medium">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
               </span>
             </div>
 
-            <p className="text-gray-300 leading-relaxed mb-4 font-medium">
+            <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-4">
               {comment.body}
             </p>
 
@@ -132,8 +132,8 @@ function CommentItem({
                 disabled={isPending || !currentUserId}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all font-bold text-sm ${
                   userLike === true
-                    ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                    : 'bg-black/30 border-gray-700 text-gray-400 hover:border-green-500/50 hover:text-green-400'
+                    ? 'bg-green-50 dark:bg-green-900/30 border-green-500 text-green-600 dark:text-green-400'
+                    : 'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-green-500 hover:text-green-600 dark:hover:text-green-400'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <svg className="w-5 h-5" fill={userLike === true ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -148,8 +148,8 @@ function CommentItem({
                 disabled={isPending || !currentUserId}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all font-bold text-sm ${
                   userLike === false
-                    ? 'bg-red-500/20 border-red-500/50 text-red-400'
-                    : 'bg-black/30 border-gray-700 text-gray-400 hover:border-red-500/50 hover:text-red-400'
+                    ? 'bg-red-50 dark:bg-red-900/30 border-red-500 text-red-600 dark:text-red-400'
+                    : 'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-red-500 hover:text-red-600 dark:hover:text-red-400'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <svg className="w-5 h-5" fill={userLike === false ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +162,7 @@ function CommentItem({
               {!isReply && currentUserId && (
                 <button
                   onClick={() => onReply(comment.id, profile?.name || comment.author_name)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-gray-700 bg-black/30 text-gray-400 hover:border-purple-500/50 hover:text-purple-400 transition-all font-bold text-sm"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all font-bold text-sm"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
@@ -175,7 +175,7 @@ function CommentItem({
               {isAuthor && !showDeleteConfirm && (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-gray-700 bg-black/30 text-gray-400 hover:border-red-500/50 hover:text-red-400 transition-all font-bold text-sm"
+                  className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 transition-all font-bold text-sm"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -196,7 +196,7 @@ function CommentItem({
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={isPending}
-                    className="px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm transition-all"
+                    className="px-3 py-1.5 rounded-lg bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 text-black dark:text-white font-bold text-sm transition-all"
                   >
                     Cancel
                   </button>
@@ -241,23 +241,23 @@ export default function CommentsSection({
 
   return (
     <div className="mt-16" id="comments">
-      <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-8">
-        <span className="text-gradient-grunge">Comments</span>
-        <span className="ml-4 text-2xl text-gray-600">({comments.length})</span>
+      <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-8">
+        Comments
+        <span className="ml-4 text-2xl text-neutral-500 dark:text-neutral-400">({comments.length})</span>
       </h2>
 
       {/* Comment Form */}
       {currentUserId ? (
         <div className="mb-12" id="comment-form">
-          <div className="card-grunge p-6 rounded-xl">
+          <div className="bg-neutral-50 dark:bg-neutral-900 p-6 rounded-xl border border-neutral-200 dark:border-neutral-800">
             {replyTo && (
               <div className="mb-4 flex items-center gap-3">
-                <span className="text-gray-400 font-medium">
-                  Replying to <span className="text-purple-400 font-black">{replyTo.name}</span>
+                <span className="text-neutral-600 dark:text-neutral-400 font-medium">
+                  Replying to <span className="text-black dark:text-white font-bold">{replyTo.name}</span>
                 </span>
                 <button
                   onClick={() => setReplyTo(null)}
-                  className="text-gray-500 hover:text-red-400 transition-colors"
+                  className="text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -275,12 +275,12 @@ export default function CommentsSection({
                 rows={4}
                 required
                 placeholder="Share your thoughts..."
-                className="input-grunge w-full px-4 py-3 bg-black/50 border-2 border-gray-800 focus:border-purple-500 rounded-xl text-white placeholder-gray-500 transition-all resize-none font-medium"
+                className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border-2 border-neutral-300 dark:border-neutral-700 focus:border-black dark:focus:border-white rounded-xl text-black dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 transition-all resize-none"
               />
               
               <button
                 type="submit"
-                className="btn-grunge px-6 py-3 text-white font-black uppercase tracking-wider text-sm"
+                className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all"
               >
                 Post Comment
               </button>
@@ -289,13 +289,13 @@ export default function CommentsSection({
         </div>
       ) : (
         <div className="mb-12">
-          <div className="card-grunge p-6 rounded-xl text-center">
-            <p className="text-gray-400 font-medium mb-4">
+          <div className="bg-neutral-50 dark:bg-neutral-900 p-6 rounded-xl text-center border border-neutral-200 dark:border-neutral-800">
+            <p className="text-neutral-600 dark:text-neutral-400 mb-4">
               You must be signed in to comment
             </p>
             <a
               href={`/login?redirectTo=/posts/${postSlug}`}
-              className="btn-grunge inline-block px-6 py-3 text-white font-black uppercase tracking-wider text-sm"
+              className="inline-block px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all"
             >
               Sign In to Comment
             </a>
@@ -305,11 +305,11 @@ export default function CommentsSection({
 
       {/* Comments List */}
       {comments.length === 0 ? (
-        <div className="card-grunge p-12 rounded-xl text-center">
-          <svg className="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-neutral-50 dark:bg-neutral-900 p-12 rounded-xl text-center border border-neutral-200 dark:border-neutral-800">
+          <svg className="w-16 h-16 mx-auto mb-4 text-neutral-400 dark:text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <p className="text-gray-500 font-medium text-lg">
+          <p className="text-neutral-500 dark:text-neutral-400 text-lg">
             No comments yet. Be the first to share your thoughts!
           </p>
         </div>

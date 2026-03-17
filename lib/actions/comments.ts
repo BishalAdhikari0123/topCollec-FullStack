@@ -126,7 +126,7 @@ export async function createCommentAction(formData: FormData) {
   // Get user profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('name, email')
+    .select('display_name')
     .eq('id', user.id)
     .single()
 
@@ -135,11 +135,11 @@ export async function createCommentAction(formData: FormData) {
     .insert({
       post_id: postId,
       author_id: user.id,
-      author_name: profile?.name || 'Anonymous',
-      author_email: profile?.email || user.email,
+      author_name: profile?.display_name || 'Anonymous',
+      author_email: user.email,
       body: body.trim(),
       parent_id: parentId || null,
-      is_approved: true, // Auto-approve for now
+      is_approved: true,
     })
 
   if (error) {

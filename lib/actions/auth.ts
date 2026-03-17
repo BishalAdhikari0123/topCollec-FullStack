@@ -42,8 +42,7 @@ export async function signUp(formData: FormData) {
     .from('profiles')
     .insert({
       id: authData.user.id,
-      name,
-      email,
+      display_name: name,
       bio: null,
       avatar_url: null,
       is_admin: false,

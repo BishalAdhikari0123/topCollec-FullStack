@@ -31,111 +31,99 @@ export default function PostCard({ post }: PostCardProps) {
   const tags = post.post_tags?.flatMap((pt) => pt.tags).filter(Boolean) || []
 
   return (
-    <article className="group card-grunge rounded-3xl overflow-hidden grunge-texture relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-transparent to-pink-900/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-      
-      <Link href={`/posts/${post.slug}`} className="block relative">
-        {post.featured_image && (
-          <div className="relative h-72 w-full overflow-hidden">
+    <article className="card card-hover overflow-hidden group relative bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300">
+      {post.featured_image && (
+        <Link href={`/posts/${post.slug}`} className="block relative overflow-hidden">
+          <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-900">
             <Image
               src={post.featured_image}
               alt={post.title}
               fill
-              className="object-cover group-hover:scale-110 transition-transform duration-700 filter contrast-110 saturate-90"
+              className="object-cover group-hover:scale-110 transition-transform duration-700 grayscale-[0.3] group-hover:grayscale-0"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80"></div>
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                {author && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      {author.avatar_url && (
-                        <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-purple-500/50">
-                          <Image
-                            src={author.avatar_url}
-                            alt={author.display_name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                      <span className="font-bold text-purple-300 uppercase tracking-wide text-xs">
-                        {author.display_name || 'Anonymous'}
-                      </span>
-                    </div>
-                    <span className="text-gray-600">•</span>
-                  </>
-                )}
-                <time dateTime={post.published_at} className="flex items-center gap-1 text-xs uppercase tracking-wider">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {formatDate(post.published_at)}
-                </time>
-              </div>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
-        )}
-      </Link>
+        </Link>
+      )}
 
-      <div className="p-8 relative">
-        <Link href={`/posts/${post.slug}`}>
-          <h2 className="text-3xl font-black mb-4 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-all line-clamp-2 uppercase tracking-tight leading-tight">
+      <div className="p-6 lg:p-8">
+        {/* Meta Info */}
+        <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+          {author && (
+            <>
+              <div className="flex items-center gap-2 group/author">
+                {author.avatar_url && (
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden ring-2 ring-neutral-200 dark:ring-neutral-700 group-hover/author:ring-neutral-400 dark:group-hover/author:ring-neutral-500 transition-all">
+                    <Image
+                      src={author.avatar_url}
+                      alt={author.display_name}
+                      fill
+                      className="object-cover grayscale group-hover/author:grayscale-0 transition-all"
+                    />
+                  </div>
+                )}
+                <span className="font-semibold text-neutral-700 dark:text-neutral-300 group-hover/author:text-neutral-900 dark:group-hover/author:text-neutral-100 transition-colors">
+                  {author.display_name || 'Anonymous'}
+                </span>
+              </div>
+              <span className="text-neutral-300 dark:text-neutral-700">•</span>
+            </>
+          )}
+          <time dateTime={post.published_at} className="font-medium">
+            {formatDate(post.published_at)}
+          </time>
+          {post.reading_time && (
+            <>
+              <span className="text-neutral-300 dark:text-neutral-700">•</span>
+              <span className="font-medium flex items-center gap-1">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+                {post.reading_time} min
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Title */}
+        <Link href={`/posts/${post.slug}`} className="group/title">
+          <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-neutral-900 dark:text-neutral-50 group-hover/title:text-transparent group-hover/title:bg-clip-text group-hover/title:bg-gradient-to-r group-hover/title:from-neutral-900 group-hover/title:to-neutral-600 dark:group-hover/title:from-neutral-50 dark:group-hover/title:to-neutral-400 line-clamp-2 leading-tight transition-all duration-300">
             {post.title}
           </h2>
         </Link>
 
+        {/* Excerpt */}
         {post.excerpt && (
-          <p className="text-gray-400 mb-6 line-clamp-3 leading-relaxed font-light text-lg">
+          <p className="text-neutral-600 dark:text-neutral-400 mb-6 line-clamp-3 leading-relaxed text-base">
             {post.excerpt}
           </p>
         )}
 
+        {/* Tags & Stats */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            {post.reading_time && (
-              <span className="flex items-center gap-2 font-bold uppercase tracking-wide">
-                <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                {post.reading_time} MIN
-              </span>
-            )}
-            {post.views > 0 && (
-              <span className="flex items-center gap-2 font-bold uppercase tracking-wide">
-                <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                {post.views}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t-2 border-gray-800/50">
-            {tags.slice(0, 4).map((tag: {id: string; name: string; slug: string}) => (
+          <div className="flex flex-wrap gap-2">
+            {tags.slice(0, 3).map((tag: {id: string; name: string; slug: string}) => (
               <Link
                 key={tag.id}
                 href={`/tags/${tag.slug}`}
-                className="group/tag relative px-4 py-2 bg-black/30 text-gray-400 rounded-lg hover:text-purple-300 border border-gray-800 hover:border-purple-500/50 transition-all font-bold text-xs uppercase tracking-wider overflow-hidden"
+                className="badge hover:bg-neutral-900 hover:text-white dark:hover:bg-neutral-100 dark:hover:text-neutral-900 transition-colors"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 opacity-0 group-hover/tag:opacity-100 transition-opacity"></span>
-                <span className="relative flex items-center gap-1">
-                  <span className="text-purple-500">#</span>
-                  {tag.name}
-                </span>
+                #{tag.name}
               </Link>
             ))}
-            {tags.length > 4 && (
-              <span className="px-4 py-2 text-gray-600 font-bold text-xs uppercase tracking-wider">
-                +{tags.length - 4}
-              </span>
-            )}
           </div>
-        )}
+          
+          {post.views > 0 && (
+            <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>{post.views}</span>
+            </div>
+          )}
+        </div>
       </div>
     </article>
   )

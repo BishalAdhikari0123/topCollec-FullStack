@@ -44,26 +44,26 @@ export default function CommentForm({ postId }: CommentFormProps) {
 
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-      <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+    <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-6 border border-neutral-200 dark:border-neutral-800">
+      <h4 className="text-lg font-semibold mb-4 text-black dark:text-white">
         Leave a Comment
       </h4>
 
       {success && (
-        <div className="mb-4 p-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-md">
+        <div className="mb-4 p-4 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-md border border-green-200 dark:border-green-800">
           Comment submitted! It will appear after moderation.
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-md">
+        <div className="mb-4 p-4 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-md border border-red-200 dark:border-red-800">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="body" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+          <label htmlFor="body" className="block text-sm font-medium mb-2 text-neutral-700 dark:text-neutral-300">
             Comment *
           </label>
           <textarea
@@ -72,14 +72,14 @@ export default function CommentForm({ postId }: CommentFormProps) {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             required
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent bg-white dark:bg-neutral-800 text-black dark:text-white"
             placeholder="Share your thoughts..."
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+            <label htmlFor="name" className="block text-sm font-medium mb-2 text-neutral-700 dark:text-neutral-300">
               Name *
             </label>
             <input
@@ -88,12 +88,12 @@ export default function CommentForm({ postId }: CommentFormProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent bg-white dark:bg-neutral-800 text-black dark:text-white"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+            <label htmlFor="email" className="block text-sm font-medium mb-2 text-neutral-700 dark:text-neutral-300">
               Email *
             </label>
             <input
@@ -102,7 +102,7 @@ export default function CommentForm({ postId }: CommentFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent bg-white dark:bg-neutral-800 text-black dark:text-white"
             />
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function CommentForm({ postId }: CommentFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Comment'}
         </button>

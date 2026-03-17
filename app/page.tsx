@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getPublishedPosts, getPopularTags } from '@/lib/actions/posts'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
@@ -46,19 +47,30 @@ export default async function HomePage({
   }))
 
   return (
-    <div className="min-h-screen bg-[#121212] relative">
-      <div className="container mx-auto px-4 py-16 max-w-7xl">
-        {/* Hero Section with Grunge Style */}
-        <div className="mb-20 text-center animate-fadeIn relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-blue-600/10 blur-3xl"></div>
-          <div className="relative">
-            <h1 className="text-7xl md:text-8xl font-black mb-6 text-gradient-grunge tracking-tighter leading-none">
-              LATEST STORIES
-            </h1>
-            <div className="h-1 w-32 mx-auto bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 mb-6 animate-pulse-glow"></div>
-            <p className="text-2xl text-gray-400 font-light tracking-wide uppercase">
-              Explore • Discover • Immerse
-            </p>
+    <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900/30 dark:to-neutral-950">
+      <div className="container mx-auto px-4 py-12 lg:py-20 max-w-7xl">
+        {/* Hero Section */}
+        <div className="mb-16 lg:mb-20 text-center relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-neutral-200/30 dark:bg-neutral-800/20 rounded-full blur-3xl -z-10" />
+          <h1 className="heading-xl mb-6 animate-fade-in bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 dark:from-neutral-50 dark:via-neutral-300 dark:to-neutral-50">
+            Latest Stories
+          </h1>
+          <p className="body-lg max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            Discover compelling narratives, explore different perspectives, and immerse yourself in the art of storytelling.
+          </p>
+          <div className="flex justify-center gap-4 mt-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <Link href="/series" className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl font-semibold hover:scale-105 transition-transform shadow-lg hover:shadow-xl">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+              </svg>
+              Explore Series
+            </Link>
+            <Link href="/tags" className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-xl font-semibold hover:border-neutral-900 dark:hover:border-neutral-100 hover:scale-105 transition-all shadow-md hover:shadow-lg">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+              Browse Tags
+            </Link>
           </div>
         </div>
 
@@ -66,25 +78,23 @@ export default async function HomePage({
           {/* Main content */}
           <div className="lg:col-span-2">
             {mappedPosts.length === 0 ? (
-              <div className="text-center py-32 card-grunge rounded-3xl animate-fadeIn grunge-texture">
-                <div className="animate-float">
-                  <svg className="w-32 h-32 mx-auto text-purple-900/50 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-black text-gray-500 mb-3 uppercase tracking-wider">No Content Found</h3>
-                <p className="text-gray-600 text-lg">
-                  Stay tuned for new stories and adventures
+              <div className="text-center py-20 card">
+                <svg className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 className="heading-sm mb-2">No Posts Yet</h3>
+                <p className="body">
+                  Check back soon for new stories
                 </p>
               </div>
             ) : (
               <>
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {mappedPosts.map((post, index: number) => (
                     <div 
                       key={post.id} 
-                      className="animate-slideIn"
-                      style={{ animationDelay: `${index * 0.15}s` }}
+                      className="animate-slide-in-up"
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <PostCard post={post} />
                     </div>
@@ -92,7 +102,7 @@ export default async function HomePage({
                 </div>
 
                 {totalPages > 1 && (
-                  <div className="mt-16 animate-fadeIn">
+                  <div className="mt-12 animate-fade-in">
                     <Pagination currentPage={page} totalPages={totalPages} />
                   </div>
                 )}
@@ -102,46 +112,42 @@ export default async function HomePage({
 
           {/* Sidebar */}
           <aside className="lg:col-span-1">
-            <div className="sticky top-28 space-y-8">
-              <div className="card-grunge rounded-2xl p-8 animate-slideInRight grunge-texture overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-3xl"></div>
-                <div className="relative">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="p-3 bg-purple-500/20 rounded-xl border-2 border-purple-500/30 animate-pulse-glow">
-                      <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-3xl font-black text-white uppercase tracking-tight">
-                      About
-                    </h2>
+            <div className="sticky top-28 space-y-6">
+              {/* About Card */}
+              <div className="card rounded-2xl p-8 bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border border-neutral-200 dark:border-neutral-800 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-neutral-900 dark:bg-neutral-100 rounded-xl shadow-md">
+                    <svg className="w-7 h-7 text-white dark:text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                  <div className="h-0.5 w-16 bg-gradient-to-r from-purple-500 to-transparent mb-4"></div>
-                  <p className="text-gray-400 leading-relaxed font-light">
-                    A curated collection of <span className="text-purple-400 font-bold">short stories</span>, 
-                    <span className="text-pink-400 font-bold"> fantasy tales</span>, and 
-                    <span className="text-blue-400 font-bold"> interesting lists</span>. 
-                    Dive into worlds of imagination and discovery. ✨
-                  </p>
+                  <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-50">
+                    About
+                  </h2>
                 </div>
+                <div className="h-1 w-16 bg-gradient-to-r from-neutral-900 to-neutral-400 dark:from-neutral-100 dark:to-neutral-600 rounded-full mb-6"></div>
+                <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-sm">
+                  A curated collection of <span className="font-bold text-neutral-900 dark:text-neutral-100">short stories</span>, 
+                  <span className="font-bold text-neutral-900 dark:text-neutral-100"> fantasy tales</span>, and 
+                  <span className="font-bold text-neutral-900 dark:text-neutral-100"> creative writing</span>. 
+                  Dive into worlds of imagination and discovery.
+                </p>
               </div>
 
-              <div className="card-grunge rounded-2xl p-8 animate-slideInRight grunge-texture overflow-hidden relative" style={{ animationDelay: '0.2s' }}>
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-600/10 rounded-full blur-3xl"></div>
-                <div className="relative">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="p-3 bg-pink-500/20 rounded-xl border-2 border-pink-500/30 animate-pulse-glow">
-                      <svg className="w-8 h-8 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-3xl font-black text-white uppercase tracking-tight">
-                      Tags
-                    </h2>
+              {/* Tags Card */}
+              <div className="card rounded-2xl p-8 bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border border-neutral-200 dark:border-neutral-800 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-neutral-900 dark:bg-neutral-100 rounded-xl shadow-md">
+                    <svg className="w-7 h-7 text-white dark:text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
                   </div>
-                  <div className="h-0.5 w-16 bg-gradient-to-r from-pink-500 to-transparent mb-4"></div>
-                  <TagCloud tags={popularTags} />
+                  <h2 className="text-2xl font-black text neutral-900 dark:text-neutral-50">
+                    Popular Tags
+                  </h2>
                 </div>
+                <div className="h-1 w-16 bg-gradient-to-r from-neutral-900 to-neutral-400 dark:from-neutral-100 dark:to-neutral-600 rounded-full mb-6"></div>
+                <TagCloud tags={popularTags} />
               </div>
             </div>
           </aside>

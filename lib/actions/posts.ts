@@ -305,6 +305,8 @@ interface PostData {
   featured_image?: string
   status: string
   tagIds?: string[]
+  series_id?: string | null
+  series_order?: number | null
 }
 
 export async function createPost(postData: PostData) {
@@ -350,6 +352,9 @@ export async function createPost(postData: PostData) {
 
   revalidatePath('/admin/posts')
   revalidatePath('/')
+  if (post.series_id) {
+    revalidatePath('/series')
+  }
   return newPost
 }
 
@@ -400,6 +405,9 @@ export async function updatePost(postId: string, postData: PostData) {
   revalidatePath('/admin/posts')
   revalidatePath(`/posts/${post.slug}`)
   revalidatePath('/')
+  if (post.series_id) {
+    revalidatePath('/series')
+  }
 }
 
 export async function deletePost(postId: string) {

@@ -7,10 +7,17 @@ import remarkGfm from 'remark-gfm'
 import { getPostBySlug, getRelatedPosts } from '@/lib/actions/posts'
 import { getCommentsByPostId } from '@/lib/actions/comments'
 import { getPostSeriesNavigation } from '@/lib/actions/series'
+import { isPostBookmarked } from '@/lib/actions/bookmarks'
 import { formatDate } from '@/lib/utils'
 import { SITE_NAME, SITE_URL } from '@/lib/constants'
 import CommentsSection from '@/components/CommentsSection'
 import SeriesNavigation from '@/components/SeriesNavigation'
+import BookmarkButton from '@/components/BookmarkButton'
+import ShareButtons from '@/components/ShareButtons'
+import ReadingProgressBar from '@/components/ReadingProgressBar'
+import BackToTop from '@/components/BackToTop'
+import RelatedPosts from '@/components/RelatedPosts'
+import NewsletterSubscribe from '@/components/NewsletterSubscribe'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -135,6 +142,9 @@ export default async function PostPage({
   // --- Comments ---
   const comments = await getCommentsByPostId(post.id)
 
+  // --- Bookmark Status ---
+  const isBookmarked = await isPostBookmarked(post.id)
+
   // --- Series Navigation ---
   const seriesNavRaw = (await getPostSeriesNavigation(post.id)) as SeriesNavRaw | null
 
@@ -194,6 +204,9 @@ export default async function PostPage({
 
   return (
     <>
+      <ReadingProgressBar />
+      <BackToTop />
+      
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -214,14 +227,14 @@ export default async function PostPage({
 
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">{post.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-black dark:text-white">{post.title}</h1>
 
-          <div className="flex items-center gap-4 text-gray-400 mb-6">
+          <div className="flex items-center gap-4 text-neutral-600 dark:text-neutral-400 mb-6">
             {post.profiles && (
               <>
                 <Link
                   href={`/authors/${post.profiles.id}`}
-                  className="flex items-center gap-2 hover:text-purple-400 transition-colors"
+                  className="flex items-center gap-2 hover:text-black dark:hover:text-white transition-colors"
                 >
                   {post.profiles.avatar_url && (
                     <Image
@@ -254,13 +267,26 @@ export default async function PostPage({
                 <Link
                   key={tag.id}
                   href={`/tags/${tag.slug}`}
-                  className="text-sm px-3 py-1 bg-purple-900/30 text-purple-300 rounded-full hover:bg-purple-800/50 transition-colors border border-purple-700/30"
+                  className="text-sm px-3 py-1 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors border border-neutral-200 dark:border-neutral-700"
                 >
                   {tag.name}
                 </Link>
               ))}
             </div>
           )}
+
+          {/* Share & Bookmark */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+            <ShareButtons 
+              url={`${SITE_URL}/posts/${post.slug}`}
+              title={post.title}
+              description={post.excerpt || undefined}
+            />
+            <BookmarkButton 
+              postId={post.id}
+              initialBookmarked={isBookmarked}
+            />
+          </div>
         </header>
 
         {/* Featured Image */}
@@ -271,14 +297,14 @@ export default async function PostPage({
         )}
 
         {/* Content */}
-        <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+        <div className="prose prose-lg prose-neutral dark:prose-invert max-w-none mb-12">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
         </div>
 
         {/* Author Bio */}
         {post.profiles?.bio && (
-          <div className="border-t border-gray-800 pt-8 mb-12">
-            <h3 className="text-2xl font-bold mb-4 text-white">About the Author</h3>
+          <div className="border-t border-neutral-200 dark:border-neutral-800 pt-8 mb-12">
+            <h3 className="text-2xl font-bold mb-4 text-black dark:text-white">About the Author</h3>
             <div className="flex gap-4">
               {post.profiles.avatar_url && (
                 <Image
@@ -292,43 +318,23 @@ export default async function PostPage({
               <div>
                 <Link
                   href={`/authors/${post.profiles.id}`}
-                  className="text-xl font-semibold text-purple-400 hover:text-pink-400 transition-colors"
+                  className="text-xl font-semibold text-black dark:text-white hover:text-neutral-600 dark:hover:text-neutral-400 transition-colors"
                 >
                   {post.profiles.display_name}
                 </Link>
-                <p className="text-gray-400 mt-2">{post.profiles.bio}</p>
+                <p className="text-neutral-600 dark:text-neutral-400 mt-2">{post.profiles.bio}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Related Posts */}
-        {relatedPosts.length > 0 && (
-          <div className="border-t border-gray-800 pt-8 mb-12">
-            <h3 className="text-2xl font-bold mb-6 text-white uppercase tracking-tight">
-              Related Posts
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedPosts.map(rp => (
-                <Link key={rp.id} href={`/posts/${rp.slug}`} className="group">
-                  {rp.featured_image && (
-                    <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden">
-                      <Image
-                        src={rp.featured_image}
-                        alt={rp.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  )}
-                  <h4 className="font-semibold text-white group-hover:text-purple-400 transition-colors">
-                    {rp.title}
-                  </h4>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        <RelatedPosts posts={relatedPosts} />
+
+        {/* Newsletter Subscription */}
+        <div className="mt-12 mb-12">
+          <NewsletterSubscribe />
+        </div>
 
         {/* Comments Section */}
         <CommentsSection

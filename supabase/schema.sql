@@ -11,6 +11,7 @@ create table profiles (
   bio text,
   avatar_url text,
   role text default 'author', -- 'author' | 'admin'
+  is_admin boolean default false,
   created_at timestamptz default now()
 );
 
@@ -166,6 +167,73 @@ create policy "Users can delete own bookmarks"
 -- Full-text search setup
 alter table posts add column search_vector tsvector;
 
+-- Comment likes table
+create table comment_likes (
+  id uuid primary key default gen_random_uuid(),
+  comment_id uuid not null references comments(id) on delete cascade,
+  user_id uuid not null references profiles(id) on delete cascade,
+  is_like boolean not null default true,
+  created_at timestamptz default now(),
+  unique(comment_id, user_id)
+);
+
+-- Enable RLS on comment_likes
+alter table comment_likes enable row level security;
+
+-- Comment likes policies
+create policy "Comment likes are viewable by everyone"
+  on comment_likes for select
+  using (true);
+
+create policy "Authenticated users can create comment likes"
+  on comment_likes for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own comment likes"
+  on comment_likes for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own comment likes"
+  on comment_likes for delete
+  using (auth.uid() = user_id);
+
+-- Series table
+create table series (
+  id uuid primary key default gen_random_uuid(),
+  author_id uuid not null references profiles(id) on delete cascade,
+  title text not null,
+  slug text not null unique,
+  description text,
+  cover_image text,
+  status text default 'draft' check (status in ('draft', 'published', 'archived')),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Enable RLS on series
+alter table series enable row level security;
+
+-- Series policies
+create policy "Published series are viewable by everyone"
+  on series for select
+  using (status = 'published' or auth.uid() = author_id);
+
+create policy "Authors can create series"
+  on series for insert
+  with check (auth.uid() = author_id);
+
+create policy "Authors can update own series"
+  on series for update
+  using (auth.uid() = author_id);
+
+create policy "Authors can delete own series"
+  on series for delete
+  using (auth.uid() = author_id);
+
+-- Add series fields to posts
+alter table posts add column series_id uuid references series(id) on delete set null;
+alter table posts add column series_order integer;
+
 create index posts_search_idx on posts using gin(search_vector);
 
 -- Trigger function to populate search_vector
@@ -244,3 +312,85 @@ create index comments_post_id_idx on comments(post_id);
 create index comments_is_approved_idx on comments(is_approved);
 create index post_tags_post_id_idx on post_tags(post_id);
 create index post_tags_tag_id_idx on post_tags(tag_id);
+create index comment_likes_comment_id_idx on comment_likes(comment_id);
+create index comment_likes_user_id_idx on comment_likes(user_id);
+create index idx_series_slug on series(slug);
+create index idx_series_author on series(author_id);
+create index idx_series_status on series(status);
+create index idx_posts_series_id on posts(series_id);
+create index idx_posts_series_order on posts(series_id, series_order);
+
+-- Series helper functions
+create or replace function get_series_post_count(series_id_param uuid)
+returns integer
+language plpgsql
+security definer
+as $$
+declare
+  post_count integer;
+begin
+  select count(*)
+  into post_count
+  from posts
+  where series_id = series_id_param and status = 'published';
+  return coalesce(post_count, 0);
+end;
+$$;
+
+create or replace function get_next_post_in_series(current_post_id uuid)
+returns table (id uuid, title text, slug text, series_order integer)
+language plpgsql
+security definer
+as $$
+declare
+  current_series_id uuid;
+  current_order integer;
+begin
+  select posts.series_id, posts.series_order
+  into current_series_id, current_order
+  from posts
+  where posts.id = current_post_id;
+
+  if current_series_id is null then
+    return;
+  end if;
+
+  return query
+  select posts.id, posts.title, posts.slug, posts.series_order
+  from posts
+  where posts.series_id = current_series_id
+    and posts.series_order > current_order
+    and posts.status = 'published'
+  order by posts.series_order asc
+  limit 1;
+end;
+$$;
+
+create or replace function get_previous_post_in_series(current_post_id uuid)
+returns table (id uuid, title text, slug text, series_order integer)
+language plpgsql
+security definer
+as $$
+declare
+  current_series_id uuid;
+  current_order integer;
+begin
+  select posts.series_id, posts.series_order
+  into current_series_id, current_order
+  from posts
+  where posts.id = current_post_id;
+
+  if current_series_id is null then
+    return;
+  end if;
+
+  return query
+  select posts.id, posts.title, posts.slug, posts.series_order
+  from posts
+  where posts.series_id = current_series_id
+    and posts.series_order < current_order
+    and posts.status = 'published'
+  order by posts.series_order desc
+  limit 1;
+end;
+$$;

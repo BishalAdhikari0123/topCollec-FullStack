@@ -19,7 +19,7 @@ interface CommentListProps {
 export default function CommentList({ comments }: CommentListProps) {
   if (comments.length === 0) {
     return (
-      <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+      <p className="text-neutral-500 dark:text-neutral-400 text-center py-8">
         No comments yet. Be the first to comment!
       </p>
     )
@@ -33,7 +33,7 @@ export default function CommentList({ comments }: CommentListProps) {
         return (
           <div
             key={comment.id}
-            className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4"
+            className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-4 border border-neutral-200 dark:border-neutral-800"
           >
             <div className="flex items-start gap-4">
               {profile?.avatar_url && (
@@ -48,15 +48,15 @@ export default function CommentList({ comments }: CommentListProps) {
               
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                  <span className="font-semibold text-black dark:text-white">
                     {profile?.display_name || comment.author_name || 'Anonymous'}
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400">
                     {formatDate(comment.created_at)}
                   </span>
                 </div>
                 
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
                   {comment.body}
                 </p>
               </div>
