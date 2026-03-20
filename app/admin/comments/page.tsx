@@ -28,7 +28,7 @@ export default async function CommentsPage() {
   if (profileError) {
     await supabase
       .from('profiles')
-      .insert({ id: user!.id, is_admin: false })
+      .insert([{ id: user!.id, is_admin: false }])
     redirect('/')
   }
 
