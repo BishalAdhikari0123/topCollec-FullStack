@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -10,15 +11,13 @@ export const metadata: Metadata = {
   description: 'Your saved posts for later reading',
 }
 
-export default async function BookmarksPage({ searchParams }: { searchParams: { page?: string } }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login?redirectTo=/bookmarks')
-  }
-
-  const page = Number(searchParams.page) || 1
+export default async function BookmarksPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ page?: string }> 
+}) {
+  const resolvedSearchParams = await searchParams
+  const page = Number(resolvedSearchParams.page) || 1
   const { posts, count, totalPages } = await getUserBookmarks(page)
 
   return (
@@ -37,7 +36,7 @@ export default async function BookmarksPage({ searchParams }: { searchParams: { 
         {posts && posts.length > 0 ? (
           <>
             <div className="grid gap-8 mb-12">
-              {posts.map((post: any) => (
+              {posts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>
@@ -57,7 +56,7 @@ export default async function BookmarksPage({ searchParams }: { searchParams: { 
             <p className="text-neutral-600 dark:text-neutral-400 mb-6">
               Save posts to read later by clicking the bookmark icon
             </p>
-            <a
+            <Link
               href="/"
               className="btn-primary inline-flex items-center gap-2"
             >
@@ -65,7 +64,7 @@ export default async function BookmarksPage({ searchParams }: { searchParams: { 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               Browse Posts
-            </a>
+            </Link>
           </div>
         )}
       </div>

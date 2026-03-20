@@ -140,7 +140,7 @@ export default async function AdminSeriesPage() {
                         {s.post_count} {s.post_count === 1 ? 'post' : 'posts'}
                       </span>
                       <span>
-                        By {(s.profiles as any)?.display_name || 'Unknown'}
+                        By {(s.profiles as { display_name?: string } | null)?.display_name || 'Unknown'}
                       </span>
                       <span>
                         Created {new Date(s.created_at).toLocaleDateString()}

@@ -2,9 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import SeriesEditor from '@/components/admin/SeriesEditor'
 
-export default async function EditSeriesPage({ params }: { params: { id: string } }) {
+export default async function EditSeriesPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  
+  const resolvedParams = await params
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
@@ -25,7 +26,7 @@ export default async function EditSeriesPage({ params }: { params: { id: string 
   const { data: series, error } = await supabase
     .from('series')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single()
 
   if (error || !series) {

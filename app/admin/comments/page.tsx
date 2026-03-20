@@ -37,7 +37,7 @@ export default async function CommentsPage() {
   }
 
   // Get all comments with post info
-  let allComments
+  let allComments: CommentData[] = []
   const { data: comments, error: commentsError } = await supabase
     .from('comments')
     .select(`
@@ -100,18 +100,18 @@ export default async function CommentsPage() {
     return { likes, dislikes }
   }
 
-  interface CommentData {
-    id: string
-    body: string
-    created_at: string
-    author_name: string
-    is_approved: boolean
-    posts: Array<{ id: string; title: string; slug: string }>
-    profiles: Array<{ display_name: string; avatar_url: string | null }>
-  }
+interface CommentData {
+  id: string
+  body: string
+  created_at: string
+  author_name: string
+  is_approved: boolean
+  posts: Array<{ id: string; title: string; slug: string }>
+  profiles: Array<{ name: string; avatar_url: string | null }>
+}
 
-  const pendingComments = allComments.filter((c: CommentData) => !c.is_approved)
-  const approvedComments = allComments.filter((c: CommentData) => c.is_approved)
+  const pendingComments = allComments.filter(c => !c.is_approved)
+const approvedComments = allComments.filter(c => c.is_approved)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900/30 dark:to-neutral-950">
@@ -211,7 +211,7 @@ export default async function CommentsPage() {
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-2">
                           <h4 className="font-black text-neutral-900 dark:text-neutral-50 text-lg">
-                            {profile?.display_name || comment.author_name}
+                            {profile?.name || comment.author_name}
                           </h4>
                           <span className="text-neutral-500 dark:text-neutral-400 text-sm">
                             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}

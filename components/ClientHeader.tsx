@@ -5,7 +5,7 @@ import { SITE_NAME } from '@/lib/constants'
 import ThemeToggle from './ThemeToggle'
 
 interface ClientHeaderProps {
-  user: any
+  user: { id: string } | null
 }
 
 export default function ClientHeader({ user }: ClientHeaderProps) {

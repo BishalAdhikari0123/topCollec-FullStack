@@ -119,9 +119,9 @@ export async function getUserBookmarks(page: number = 1) {
   }
 
   // Extract posts from bookmarks
-  const posts = (bookmarks || [])
-    .map(b => b.posts)
-    .filter(p => p !== null)
+const posts = (bookmarks || [])
+  .map(b => b.posts?.[0])   // 👈 extract first item
+  .filter((p): p is NonNullable<typeof p> => p !== null && p !== undefined)
 
   const totalPages = count ? Math.ceil(count / POSTS_PER_PAGE) : 0
 

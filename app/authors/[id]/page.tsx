@@ -2,11 +2,12 @@ import { getAuthorById, getAuthorPosts, getAuthorStats } from '@/lib/actions/aut
 import { notFound } from 'next/navigation'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
-import Link from 'next/link'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const author = await getAuthorById(params.id)
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const resolvedParams = await params
+  const author = await getAuthorById(resolvedParams.id)
   
   if (!author) {
     return {
@@ -24,18 +25,21 @@ export default async function AuthorPage({
   params,
   searchParams 
 }: { 
-  params: { id: string }
-  searchParams: { page?: string }
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ page?: string }>
 }) {
-  const page = Number(searchParams.page) || 1
-  const author = await getAuthorById(params.id)
+  const resolvedParams = await params
+  const resolvedSearchParams = await searchParams
+
+  const page = Number(resolvedSearchParams.page) || 1
+  const author = await getAuthorById(resolvedParams.id)
 
   if (!author) {
     notFound()
   }
 
-  const { posts, totalPages } = await getAuthorPosts(params.id, page)
-  const stats = await getAuthorStats(params.id)
+  const { posts, totalPages } = await getAuthorPosts(resolvedParams.id, page)
+  const stats = await getAuthorStats(resolvedParams.id)
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
@@ -46,10 +50,12 @@ export default async function AuthorPage({
             {/* Avatar */}
             <div className="flex-shrink-0">
               {author.avatar_url ? (
-                <img
+                <Image
                   src={author.avatar_url}
                   alt={author.display_name}
                   className="w-32 h-32 rounded-full border-4 border-neutral-200 dark:border-neutral-800 shadow-lg object-cover"
+                  width={128}
+                  height={128}
                 />
               ) : (
                 <div className="w-32 h-32 rounded-full bg-neutral-200 dark:bg-neutral-800 border-4 border-neutral-300 dark:border-neutral-700 flex items-center justify-center">
@@ -151,7 +157,7 @@ export default async function AuthorPage({
               No posts yet
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400">
-              {author.display_name} hasn't published any posts yet.
+              {author.display_name} hasn&apos;t published any posts yet.
             </p>
           </div>
         )}
