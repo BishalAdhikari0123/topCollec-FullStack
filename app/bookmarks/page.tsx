@@ -1,6 +1,4 @@
 import { getUserBookmarks } from '@/lib/actions/bookmarks'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
 import Link from 'next/link'

@@ -41,7 +41,7 @@ export default function SeriesEditor({ series }: SeriesEditorProps) {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent, status?: 'draft' | 'published') => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
