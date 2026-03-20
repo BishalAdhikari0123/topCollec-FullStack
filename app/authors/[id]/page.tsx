@@ -2,10 +2,9 @@ import { getAuthorById, getAuthorPosts, getAuthorStats } from '@/lib/actions/aut
 import { notFound } from 'next/navigation'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
-import type { Metadata } from 'next'
 import Image from 'next/image'
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
   const author = await getAuthorById(resolvedParams.id)
   

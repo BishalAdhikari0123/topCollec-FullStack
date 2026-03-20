@@ -14,7 +14,7 @@ export default async function AdminSeriesPage() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
-    .eq('id', user.id)
+    .eq('id', user!.id)
     .single()
 
   if (!profile?.is_admin) {

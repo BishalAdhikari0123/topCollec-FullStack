@@ -2,9 +2,8 @@ import { getUserBookmarks } from '@/lib/actions/bookmarks'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
 import Link from 'next/link'
-import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Saved Posts - Bookmarks',
   description: 'Your saved posts for later reading',
 }
