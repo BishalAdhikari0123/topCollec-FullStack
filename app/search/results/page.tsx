@@ -2,6 +2,7 @@ import { searchPosts } from '@/lib/actions/posts'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
 import Link from 'next/link'
+import { normalizePostForCard } from '@/lib/utils'
 
 export default async function SearchResultsPage({
   searchParams,
@@ -13,42 +14,7 @@ export default async function SearchResultsPage({
   const page = Number(params.page) || 1
   const { posts, totalPages } = await searchPosts(query, page)
 
-  // Types reflecting the searchPosts selection
-  type AuthorProfile = { display_name: string; avatar_url: string | null }
-  type SearchPost = {
-    id: string | number
-    slug: string
-    title: string
-    excerpt?: string | null
-    featured_image?: string | null
-    published_at?: string
-    reading_time?: number | null
-    views?: number | null
-    profiles?: AuthorProfile | AuthorProfile[]
-  }
-
-  // Map posts to PostCard input while normalizing shapes (profiles can be object or array)
-  const mappedPosts = (posts as SearchPost[]).map((post) => {
-    const profilesArray = post.profiles
-      ? (Array.isArray(post.profiles) ? post.profiles : [post.profiles]).map((p) => ({
-          display_name: String(p.display_name),
-          avatar_url: p.avatar_url ? String(p.avatar_url) : null,
-        }))
-      : undefined
-
-    return {
-      id: String(post.id),
-      slug: String(post.slug),
-      title: String(post.title),
-      excerpt: post.excerpt ? String(post.excerpt) : null,
-      featured_image: post.featured_image ? String(post.featured_image) : null,
-      published_at: post.published_at ? String(post.published_at) : new Date().toISOString(),
-      reading_time: post.reading_time != null ? Number(post.reading_time) : null,
-      views: post.views != null ? Number(post.views) : 0,
-      profiles: profilesArray,
-      // searchPosts does not return tags; omit post_tags
-    }
-  })
+  const mappedPosts = posts.map(post => normalizePostForCard(post))
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900/30 dark:to-neutral-950">

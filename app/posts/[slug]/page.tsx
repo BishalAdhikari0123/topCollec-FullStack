@@ -137,16 +137,17 @@ export default async function PostPage({
 
   // --- Related Posts ---
   const tagIds = tags.map(tag => tag.id)
-  const relatedPosts = await getRelatedPosts(post.id, tagIds)
-
-  // --- Comments ---
-  const comments = await getCommentsByPostId(post.id)
-
-  // --- Bookmark Status ---
-  const isBookmarked = await isPostBookmarked(post.id)
-
-  // --- Series Navigation ---
-  const seriesNavRaw = (await getPostSeriesNavigation(post.id)) as SeriesNavRaw | null
+  const [
+    relatedPosts,
+    comments,
+    isBookmarked,
+    seriesNavRaw,
+  ] = await Promise.all([
+    getRelatedPosts(post.id, tagIds),
+    getCommentsByPostId(post.id),
+    isPostBookmarked(post.id),
+    getPostSeriesNavigation(post.id) as Promise<SeriesNavRaw | null>,
+  ])
 
   const seriesNav: SeriesNav | null = seriesNavRaw
     ? {

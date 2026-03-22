@@ -77,8 +77,14 @@ export async function getPostBySlug(slug: string) {
     return null
   }
 
-  // Increment view count
-  await supabase.rpc('increment_post_views', { post_id: post.id })
+  // Increment view count (non-blocking)
+  ;(async () => {
+    try {
+      await supabase.rpc('increment_post_views', { post_id: post.id })
+    } catch (err) {
+      console.error('Error incrementing post views:', err)
+    }
+  })()
 
   return post
 }
@@ -272,7 +278,26 @@ export async function getAllTags() {
 export async function getPopularTags(limit: number = 10) {
   const supabase = await createClient()
 
-  const { data: tags, error } = await supabase
+  // Try optimized RPC first (requires get_popular_tags function in the DB)
+  const { data, error } = await supabase.rpc('get_popular_tags', {
+    limit_count: limit,
+  })
+
+  if (!error && data) {
+    return data
+  }
+
+  // Fallback: log details and use query-based implementation
+  if (error) {
+    console.warn('get_popular_tags RPC failed, falling back to query-based popular tags:', {
+      message: (error as any).message,
+      details: (error as any).details,
+      hint: (error as any).hint,
+      code: (error as any).code,
+    })
+  }
+
+  const { data: tags, error: fallbackError } = await supabase
     .from('tags')
     .select(`
       id,
@@ -280,21 +305,22 @@ export async function getPopularTags(limit: number = 10) {
       slug,
       post_tags!inner(post_id)
     `)
-    .limit(limit)
 
-  if (error) {
-    console.error('Error fetching popular tags:', error)
+  if (fallbackError) {
+    console.error('Error fetching popular tags (fallback):', fallbackError)
     return []
   }
 
-  // Count and sort tags by post count
   const tagsWithCount = (tags || []).map(tag => ({
     ...tag,
-    post_count: Array.isArray(tag.post_tags) ? tag.post_tags.length : 0
+    post_count: Array.isArray((tag as any).post_tags)
+      ? (tag as any).post_tags.length
+      : 0,
   }))
 
-  // Sort by post count descending
-  return tagsWithCount.sort((a, b) => b.post_count - a.post_count)
+  return tagsWithCount
+    .sort((a, b) => b.post_count - a.post_count)
+    .slice(0, limit)
 }
 
 interface PostData {

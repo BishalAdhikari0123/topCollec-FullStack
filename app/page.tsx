@@ -3,6 +3,7 @@ import { getPublishedPosts, getPopularTags } from '@/lib/actions/posts'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
 import TagCloud from '@/components/TagCloud'
+import { normalizePostForCard } from '@/lib/utils'
 
 export const revalidate = 3600 // Revalidate every hour
 
@@ -17,34 +18,7 @@ export default async function HomePage({
   const popularTags = await getPopularTags(15)
 
   // Map posts to correct types for PostCard
-  const mappedPosts = posts.map(post => ({
-    ...post,
-    id: String(post.id),
-    slug: String(post.slug),
-    title: String(post.title),
-    excerpt: post.excerpt ? String(post.excerpt) : null,
-    featured_image: post.featured_image ? String(post.featured_image) : null,
-    published_at: String(post.published_at),
-    reading_time: post.reading_time ? Number(post.reading_time) : null,
-    views: post.views ? Number(post.views) : 0,
-    // profiles can be a single object or an array depending on the join; normalize to array of objects
-    profiles: post.profiles
-      ? (Array.isArray(post.profiles) ? post.profiles : [post.profiles]).map(
-          (p: { display_name: string; avatar_url: string | null }) => ({
-            display_name: String(p.display_name),
-            avatar_url: p.avatar_url ? String(p.avatar_url) : null,
-          })
-        )
-      : undefined,
-    // Normalize tags to an array before mapping
-    post_tags: post.post_tags?.map((pt: { tags: Array<{ id: string; name: string; slug: string }> | { id: string; name: string; slug: string } }) => ({
-      tags: (Array.isArray(pt.tags) ? pt.tags : [pt.tags]).map((t) => ({
-        id: String(t.id),
-        name: String(t.name),
-        slug: String(t.slug),
-      })),
-    })),
-  }))
+  const mappedPosts = posts.map(post => normalizePostForCard(post))
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900/30 dark:to-neutral-950">
@@ -96,7 +70,7 @@ export default async function HomePage({
                       className="animate-slide-in-up"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <PostCard post={post} />
+                      <PostCard post={post} isLcpCandidate={index === 0} />
                     </div>
                   ))}
                 </div>

@@ -1,14 +1,27 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { SITE_NAME } from '@/lib/constants'
 import ThemeToggle from './ThemeToggle'
+import { createClient } from '@/lib/supabase/client'
 
-interface ClientHeaderProps {
-  user: { id: string } | null
+interface User {
+  id: string
 }
 
-export default function ClientHeader({ user }: ClientHeaderProps) {
+export default function ClientHeader() {
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (!error && data.user) {
+        setUser({ id: data.user.id })
+      }
+    })
+  }, [])
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-xl shadow-sm">
       <nav className="container mx-auto px-4 lg:px-6 py-4">
@@ -29,6 +42,12 @@ export default function ClientHeader({ user }: ClientHeaderProps) {
           <div className="flex items-center gap-4 lg:gap-6">
             <Link href="/" className="hidden md:flex text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all hover:scale-105">
               Home
+            </Link>
+            <Link href="/about" className="hidden md:flex text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all hover:scale-105">
+              About
+            </Link>
+            <Link href="/contact" className="hidden lg:flex text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all hover:scale-105">
+              Contact
             </Link>
             <Link href="/series" className="hidden md:flex items-center gap-2 text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all group hover:scale-105">
               <svg className="w-4 h-4 group-hover:rotate-12 transition-transform" fill="currentColor" viewBox="0 0 24 24">

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
 import Image from 'next/image'
+import { normalizePostForCard } from '@/lib/utils'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -38,6 +39,7 @@ export default async function AuthorPage({
   }
 
   const { posts, totalPages } = await getAuthorPosts(resolvedParams.id, page)
+  const mappedPosts = posts.map(post => normalizePostForCard(post))
   const stats = await getAuthorStats(resolvedParams.id)
 
   return (
@@ -135,10 +137,10 @@ export default async function AuthorPage({
           </h2>
         </div>
 
-        {posts && posts.length > 0 ? (
+        {mappedPosts && mappedPosts.length > 0 ? (
           <>
             <div className="grid gap-8 mb-12">
-              {posts.map((post) => (
+              {mappedPosts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>

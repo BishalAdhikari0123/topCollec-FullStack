@@ -3,6 +3,7 @@ import PostCard from '@/components/PostCard'
 import Pagination from '@/components/Pagination'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+import { normalizePostForCard } from '@/lib/utils'
 
 export const revalidate = 3600
 
@@ -40,41 +41,7 @@ export default async function TagPage({
     notFound()
   }
 
-  // Map posts to match PostCardProps type
-  type AuthorProfile = { display_name: string; avatar_url: string | null }
-  type TagPost = {
-    id: string | number
-    slug: string
-    title: string
-    excerpt?: string | null
-    featured_image?: string | null
-    published_at?: string
-    reading_time?: number | null
-    views?: number | null
-    profiles?: AuthorProfile | AuthorProfile[]
-  }
-
-  const mappedPosts = (posts as TagPost[]).map((post) => {
-    const profilesArray = post.profiles
-      ? (Array.isArray(post.profiles) ? post.profiles : [post.profiles]).map((p) => ({
-          display_name: String(p.display_name),
-          avatar_url: p.avatar_url ? String(p.avatar_url) : null,
-        }))
-      : undefined
-
-    return {
-      id: String(post.id),
-      slug: String(post.slug),
-      title: String(post.title),
-      excerpt: post.excerpt ? String(post.excerpt) : null,
-      featured_image: post.featured_image ? String(post.featured_image) : null,
-      published_at: post.published_at ? String(post.published_at) : new Date().toISOString(),
-      reading_time: post.reading_time != null ? Number(post.reading_time) : null,
-      views: post.views != null ? Number(post.views) : 0,
-      profiles: profilesArray,
-      // getPostsByTag doesn't include tags list here; omit post_tags
-    }
-  })
+  const mappedPosts = posts.map(post => normalizePostForCard(post))
 
   return (
     <div className="container mx-auto px-4 py-8">

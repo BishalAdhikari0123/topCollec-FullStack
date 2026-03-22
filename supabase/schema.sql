@@ -314,6 +314,8 @@ create index post_tags_post_id_idx on post_tags(post_id);
 create index post_tags_tag_id_idx on post_tags(tag_id);
 create index comment_likes_comment_id_idx on comment_likes(comment_id);
 create index comment_likes_user_id_idx on comment_likes(user_id);
+create index bookmarks_user_created_idx on bookmarks(user_id, created_at desc);
+create index comment_likes_comment_user_idx on comment_likes(comment_id, user_id);
 create index idx_series_slug on series(slug);
 create index idx_series_author on series(author_id);
 create index idx_series_status on series(status);
@@ -393,4 +395,28 @@ begin
   order by posts.series_order desc
   limit 1;
 end;
+$$;
+
+-- Function to return most popular tags by published post count
+create or replace function get_popular_tags(limit_count integer default 10)
+returns table (
+  id uuid,
+  name text,
+  slug text,
+  post_count integer
+)
+language sql
+security definer
+as $$
+  select
+    t.id,
+    t.name,
+    t.slug,
+    count(pt.post_id) as post_count
+  from tags t
+  join post_tags pt on pt.tag_id = t.id
+  join posts p on p.id = pt.post_id and p.status = 'published'
+  group by t.id, t.name, t.slug
+  order by post_count desc, t.name asc
+  limit limit_count;
 $$;

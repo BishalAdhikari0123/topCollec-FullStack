@@ -5,7 +5,6 @@ import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from '@/lib/constants'
 import ClientHeader from '@/components/ClientHeader'
 import Footer from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
-import { createClient } from '@/lib/supabase/server'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -35,17 +34,20 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
   return (
     <html lang="en" className="scroll-smooth dark" suppressHydrationWarning>
       <head>
+        {/* Performance hints for critical external origins (e.g. Supabase storage for images) */}
+        <link
+          rel="preconnect"
+          href="https://epovqbrlastgubnndyol.supabase.co"
+          crossOrigin="anonymous"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -61,7 +63,7 @@ export default async function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
-            <ClientHeader user={user} />
+            <ClientHeader />
             <main className="flex-1">{children}</main>
             <Footer />
           </div>

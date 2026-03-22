@@ -114,11 +114,11 @@ export default function Footer() {
                 About
               </Link>
               <span className="text-neutral-300 dark:text-neutral-700">•</span>
-              <Link href="/search" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors font-medium">
+              <Link href="/privacy-policy" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors font-medium">
                 Privacy
               </Link>
               <span className="text-neutral-300 dark:text-neutral-700">•</span>
-              <Link href="/search" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors font-medium">
+              <Link href="/terms" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors font-medium">
                 Terms
               </Link>
             </div>

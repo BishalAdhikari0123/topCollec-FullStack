@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { POSTS_PER_PAGE } from '@/lib/constants'
+import { normalizePostForCard } from '@/lib/utils'
 
 export async function toggleBookmark(postId: string) {
   const supabase = await createClient()
@@ -118,10 +119,12 @@ export async function getUserBookmarks(page: number = 1) {
     return { posts: [], count: 0, totalPages: 0 }
   }
 
-  // Extract posts from bookmarks
-const posts = (bookmarks || [])
-  .map(b => b.posts?.[0])   // 👈 extract first item
-  .filter((p): p is NonNullable<typeof p> => p !== null && p !== undefined)
+  // Extract and normalize posts from bookmarks
+  const rawPosts = (bookmarks || [])
+    .map(b => (Array.isArray(b.posts) ? b.posts[0] : b.posts))
+    .filter((p): p is NonNullable<typeof p> => p !== null && p !== undefined)
+
+  const posts = rawPosts.map(post => normalizePostForCard(post))
 
   const totalPages = count ? Math.ceil(count / POSTS_PER_PAGE) : 0
 
