@@ -2,27 +2,51 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
+// Types
+type ProfileRow = {
+  is_admin: boolean | null
+}
+
+type SeriesRow = {
+  id: string
+  title: string
+  slug: string
+  description?: string | null
+  cover_image?: string | null
+  status: string
+  created_at: string
+  updated_at: string
+  author_id?: string | null
+  profiles?: {
+    display_name?: string | null
+  } | null
+  post_count?: number
+}
+
 export default async function AdminSeriesPage() {
   const supabase = await createClient()
-  
+
+  // Get current user
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
   }
 
-  // Check if user is admin
-  const { data: profile } = await supabase
+  // Admin check
+  const { data: profileData, error: profileError } = await supabase
     .from('profiles')
     .select('is_admin')
-    .eq('id', user!.id)
+    .eq('id', user.id)
     .single()
 
-  if (!profile?.is_admin) {
+  const profile = profileData as ProfileRow | null
+
+  if (profileError || !profile?.is_admin) {
     redirect('/')
   }
 
   // Fetch all series
-  const { data: series } = await supabase
+  const { data: seriesData } = await supabase
     .from('series')
     .select(`
       id,
@@ -39,17 +63,19 @@ export default async function AdminSeriesPage() {
     `)
     .order('created_at', { ascending: false })
 
+  const series = (seriesData ?? []) as SeriesRow[]
+
   // Get post count for each series
   const seriesWithCounts = await Promise.all(
-    (series || []).map(async (s) => {
-      const { count } = await supabase
+    series.map(async (s) => {
+      const { count } = await (supabase as any)
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('series_id', s.id)
-      
+
       return {
         ...s,
-        post_count: count || 0
+        post_count: count || 0,
       }
     })
   )
@@ -79,7 +105,7 @@ export default async function AdminSeriesPage() {
         </div>
 
         {/* Series List */}
-        {seriesWithCounts && seriesWithCounts.length > 0 ? (
+        {seriesWithCounts.length > 0 ? (
           <div className="grid gap-6">
             {seriesWithCounts.map((s) => (
               <div
@@ -140,7 +166,7 @@ export default async function AdminSeriesPage() {
                         {s.post_count} {s.post_count === 1 ? 'post' : 'posts'}
                       </span>
                       <span>
-                        By {(s.profiles as { display_name?: string } | null)?.display_name || 'Unknown'}
+                        By {s.profiles?.display_name || 'Unknown'}
                       </span>
                       <span>
                         Created {new Date(s.created_at).toLocaleDateString()}

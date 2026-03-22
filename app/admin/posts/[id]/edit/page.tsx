@@ -16,7 +16,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single()
+    .single<{ is_admin: boolean | null }>()
 
   if (!profile?.is_admin) {
     redirect('/')
@@ -28,7 +28,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     .select('*, post_tags(tag_id)')
     .eq('id', id)
     .eq('author_id', user.id)
-    .single()
+    .single<any>()
 
   if (!post) {
     notFound()

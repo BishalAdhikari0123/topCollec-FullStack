@@ -16,7 +16,10 @@ export async function POST(request: Request) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { data, error } = await supabase
+    // Loosen typing here because our generated Database type doesn't
+    // currently describe the comments table shape, but this insert is
+    // valid at runtime.
+    const { data, error } = await (supabase as any)
       .from('comments')
       .insert([
         {

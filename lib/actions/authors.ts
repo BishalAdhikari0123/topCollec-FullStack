@@ -27,7 +27,13 @@ export async function getAuthorById(id: string) {
     .from('profiles')
     .select('*')
     .eq('id', id)
-    .single()
+    .single<{
+      id: string;
+      username: string;
+      display_name: string;
+      avatar_url: string;
+      bio: string;
+    }>()
 
   if (error) {
     console.error('Error fetching author:', error)
@@ -93,7 +99,7 @@ export async function getAuthorStats(authorId: string) {
     .eq('author_id', authorId)
     .eq('status', 'published')
 
-  const totalViews = viewsData?.reduce((sum, post) => sum + (post.views || 0), 0) || 0
+  const totalViews = (viewsData as any[])?.reduce((sum, post) => sum + (post.views as number || 0), 0) || 0
 
   // Get series count
   const { count: seriesCount } = await supabase

@@ -15,7 +15,7 @@ export default async function NewPostPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single()
+    .single<{ is_admin: boolean | null }>()
 
   if (!profile?.is_admin) {
     redirect('/')

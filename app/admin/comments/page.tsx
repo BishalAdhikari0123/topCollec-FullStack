@@ -23,10 +23,15 @@ export default async function CommentsPage() {
     .from('profiles')
     .select('is_admin, id, display_name')
     .eq('id', user!.id)
-    .single()
+    // Help TypeScript understand the shape of this row even if
+    // the generated Database type is incomplete.
+    .single<{ id: string; is_admin: boolean | null }>()
 
   if (profileError) {
-    await supabase
+    // TypeScript can struggle to infer the correct Insert type from the
+    // generated Database schema here, but at runtime this insert is valid.
+    // Cast to any to avoid a build-time type error while keeping behavior.
+    await (supabase as any)
       .from('profiles')
       .insert([{ id: user!.id, is_admin: false }])
     redirect('/')
@@ -76,8 +81,9 @@ export default async function CommentsPage() {
       `)
       .order('created_at', { ascending: false })
       .limit(100)
-    
-    allComments = result.data?.map(c => ({ ...c, profiles: [] })) || []
+
+    const baseComments = (result.data ?? []) as any[]
+    allComments = baseComments.map(c => ({ ...c, profiles: [] as any[] }))
   } else {
     allComments = comments || []
   }

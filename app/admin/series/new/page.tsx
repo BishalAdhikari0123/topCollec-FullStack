@@ -10,12 +10,12 @@ export default async function NewSeriesPage() {
     redirect('/login')
   }
 
-  // Check if user is admin
+  // Check if user is admin (explicit row type so TS doesn't infer never)
   const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single()
+    .single<{ is_admin: boolean | null }>()
 
   if (!profile?.is_admin) {
     redirect('/')

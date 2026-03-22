@@ -39,7 +39,7 @@ export async function signUp(formData: FormData) {
 
   // Create profile
   const { error: profileError } = await supabase
-    .from('profiles')
+    .from('profiles' as any)
     .insert({
       id: authData.user.id,
       display_name: name,
@@ -78,7 +78,7 @@ export async function signIn(formData: FormData) {
 
   // Check if user is admin
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('profiles' as any)
     .select('is_admin')
     .eq('id', data.user.id)
     .single()

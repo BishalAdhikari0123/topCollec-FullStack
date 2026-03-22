@@ -17,7 +17,7 @@ export default async function AdminPostsPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single()
+    .single<{ is_admin: boolean | null }>()
 
   if (!profile?.is_admin) {
     redirect('/')
@@ -28,6 +28,8 @@ export default async function AdminPostsPage() {
     .select('*')
     .eq('author_id', user.id)
     .order('created_at', { ascending: false })
+
+  const postsList = (posts ?? []) as any[]
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900/30 dark:to-neutral-950">
@@ -50,8 +52,8 @@ export default async function AdminPostsPage() {
         </div>
 
         <div className="grid gap-6">
-          {posts && posts.length > 0 ? (
-            posts.map((post, index) => (
+          {postsList.length > 0 ? (
+            postsList.map((post, index) => (
               <div
                 key={post.id}
                 className="card rounded-2xl p-6 lg:p-8 bg-white dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-800 shadow-lg hover:shadow-xl transition-all animate-slideInLeft group"

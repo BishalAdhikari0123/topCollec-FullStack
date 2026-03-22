@@ -70,7 +70,31 @@ export async function getPostBySlug(slug: string) {
     `)
     .eq('slug', slug)
     .eq('status', 'published')
-    .single()
+    .single<{
+      id: string;
+      title: string;
+      slug: string;
+      excerpt: string | null;
+      content: string;
+      featured_image: string | null;
+      published_at: string;
+      updated_at: string;
+      reading_time: number | null;
+      views: number;
+      profiles: {
+        id: string;
+        display_name: string;
+        bio: string;
+        avatar_url: string;
+      } | null;
+      post_tags: {
+        tags: {
+          id: string;
+          name: string;
+          slug: string;
+        }
+      }[];
+    }>()
 
   if (error) {
     console.error('Error fetching post:', error)
@@ -80,7 +104,7 @@ export async function getPostBySlug(slug: string) {
   // Increment view count (non-blocking)
   ;(async () => {
     try {
-      await supabase.rpc('increment_post_views', { post_id: post.id })
+      await supabase.rpc('increment_post_views', { post_id: post.id } as any)
     } catch (err) {
       console.error('Error incrementing post views:', err)
     }
@@ -134,7 +158,7 @@ export async function getPostsByTag(tagSlug: string, page: number = 1) {
     .from('tags')
     .select('id, name, slug')
     .eq('slug', tagSlug)
-    .single()
+    .single<any>()
 
   if (!tag) {
     return { tag: null, posts: [], count: 0, totalPages: 0 }
@@ -266,6 +290,7 @@ export async function getAllTags() {
     .from('tags')
     .select('id, name, slug')
     .order('name')
+    .returns<{ id: string, name: string, slug: string }[]>()
 
   if (error) {
     console.error('Error fetching tags:', error)
@@ -281,7 +306,7 @@ export async function getPopularTags(limit: number = 10) {
   // Try optimized RPC first (requires get_popular_tags function in the DB)
   const { data, error } = await supabase.rpc('get_popular_tags', {
     limit_count: limit,
-  })
+  } as any)
 
   if (!error && data) {
     return data
@@ -311,10 +336,10 @@ export async function getPopularTags(limit: number = 10) {
     return []
   }
 
-  const tagsWithCount = (tags || []).map(tag => ({
+  const tagsWithCount = (tags as any[] || []).map(tag => ({
     ...tag,
-    post_count: Array.isArray((tag as any).post_tags)
-      ? (tag as any).post_tags.length
+    post_count: Array.isArray(tag.post_tags)
+      ? tag.post_tags.length
       : 0,
   }))
 
@@ -346,7 +371,7 @@ export async function createPost(postData: PostData) {
   const { tagIds, ...post } = postData
 
   // Insert the post
-  const { data: newPost, error: postError } = await supabase
+  const { data: newPost, error: postError } = await (supabase as any)
     .from('posts')
     .insert({
       ...post,
@@ -367,7 +392,7 @@ export async function createPost(postData: PostData) {
       tag_id: tagId,
     }))
 
-    const { error: tagError } = await supabase
+    const { error: tagError } = await (supabase as any)
       .from('post_tags')
       .insert(postTags)
 
@@ -395,7 +420,7 @@ export async function updatePost(postId: string, postData: PostData) {
   const { tagIds, ...post } = postData
 
   // Update the post
-  const { error: postError } = await supabase
+  const { error: postError } = await (supabase as any)
     .from('posts')
     .update(post)
     .eq('id', postId)
@@ -419,7 +444,7 @@ export async function updatePost(postId: string, postData: PostData) {
       tag_id: tagId,
     }))
 
-    const { error: tagError } = await supabase
+    const { error: tagError } = await (supabase as any)
       .from('post_tags')
       .insert(postTags)
 

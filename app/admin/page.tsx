@@ -10,12 +10,12 @@ export default async function AdminPage() {
     redirect('/login?redirectTo=/admin')
   }
 
-  // Get user profile
+  // Get user profile (explicit row type to satisfy TypeScript)
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, email, is_admin, display_name')
     .eq('id', user.id)
-    .single()
+    .single<{ id: string; username: string | null; email: string | null; is_admin: boolean; display_name: string | null }>()
 
   // Get user stats
   const { count: postsCount } = await supabase
@@ -46,7 +46,10 @@ export default async function AdminPage() {
     .select('views')
     .eq('author_id', user.id)
 
-  const totalViews = viewsData?.reduce((sum, post) => sum + (post.views || 0), 0) || 0
+  // Help TypeScript understand the shape of the views rows even if the
+  // generated Database type doesn't explicitly define the posts table.
+  const viewsRows = (viewsData ?? []) as Array<{ views: number | null }>
+  const totalViews = viewsRows.reduce((sum, post) => sum + (post.views ?? 0), 0)
 
   // Get recent popular posts
   const { data: popularPosts } = await supabase
@@ -57,17 +60,33 @@ export default async function AdminPage() {
     .order('views', { ascending: false })
     .limit(5)
 
+  const typedPopularPosts = (popularPosts ?? []) as Array<{
+    id: string
+    title: string
+    slug: string
+    views: number | null
+    published_at: string | null
+  }>
+
+  // Get all post IDs for this author once, and reuse for comment/bookmark counts
+  const { data: authorPosts } = await supabase
+    .from('posts')
+    .select('id')
+    .eq('author_id', user.id)
+
+  const authorPostIds = (authorPosts ?? []).map((p: any) => p.id as string)
+
   // Get total comment count across all posts
   const { count: allCommentsCount } = await supabase
     .from('comments')
     .select('*', { count: 'exact', head: true })
-    .in('post_id', (await supabase.from('posts').select('id').eq('author_id', user.id)).data?.map(p => p.id) || [])
+    .in('post_id', authorPostIds)
 
   // Get bookmark count for user's posts
   const { count: bookmarksCount } = await supabase
     .from('bookmarks')
     .select('*', { count: 'exact', head: true })
-    .in('post_id', (await supabase.from('posts').select('id').eq('author_id', user.id)).data?.map(p => p.id) || [])
+    .in('post_id', authorPostIds)
 
   // Get series count
   const { count: seriesCount } = await supabase
@@ -299,7 +318,7 @@ export default async function AdminPage() {
           </div>
 
           {/* Popular Posts */}
-          {popularPosts && popularPosts.length > 0 && (
+          {typedPopularPosts.length > 0 && (
             <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-800">
               <h3 className="text-xl font-bold text-black dark:text-white mb-4 flex items-center gap-2">
                 <svg className="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,7 +327,7 @@ export default async function AdminPage() {
                 Top Performing Posts
               </h3>
               <div className="space-y-3">
-                {popularPosts.map((post, index) => (
+                {typedPopularPosts.map((post, index) => (
                   <Link
                     key={post.id}
                     href={`/posts/${post.slug}`}
@@ -323,7 +342,9 @@ export default async function AdminPage() {
                           {post.title}
                         </p>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                          {new Date(post.published_at).toLocaleDateString()}
+                          {post.published_at
+                            ? new Date(post.published_at).toLocaleDateString()
+                            : 'Unpublished'}
                         </p>
                       </div>
                     </div>

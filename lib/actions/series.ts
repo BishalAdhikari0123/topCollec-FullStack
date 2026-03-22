@@ -73,7 +73,7 @@ export async function getSeriesBySlug(slug: string) {
       )
     `)
     .eq('slug', slug)
-    .single()
+    .single<any>()
 
   if (error) {
     console.error('Error fetching series:', error)
@@ -102,6 +102,7 @@ export async function getSeriesPosts(seriesId: string) {
     .eq('series_id', seriesId)
     .eq('status', 'published')
     .order('series_order', { ascending: true })
+    .returns<{ id: string, title: string, slug: string, excerpt: string | null, featured_image: string | null, published_at: string, series_order: number | null, reading_time: number | null, views: number }[]>()
 
   if (error) {
     console.error('Error fetching series posts:', error)

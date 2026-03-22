@@ -11,12 +11,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select('slug, updated_at, published_at')
     .eq('status', 'published')
     .order('published_at', { ascending: false })
+    .returns<{ slug: string, updated_at: string, published_at: string }[]>()
 
   // Get all tags
   const { data: tags } = await supabase
     .from('tags')
     .select('slug')
     .order('name')
+    .returns<{ slug: string }[]>()
 
   const postUrls: MetadataRoute.Sitemap =
     posts?.map((post) => ({

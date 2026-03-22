@@ -128,7 +128,7 @@ export default async function PostPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const post: Post | null = await getPostBySlug(slug)
+  const post: Post | null = (await getPostBySlug(slug)) as any
 
   if (!post) notFound()
 
