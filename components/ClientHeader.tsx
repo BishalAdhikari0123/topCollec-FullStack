@@ -80,8 +80,8 @@ export default function ClientHeader() {
             
             {user ? (
               <>
-                <Link href="/admin" className="btn-primary text-sm px-5 py-2 shadow-md hover:shadow-lg">
-                  Dashboard
+                <Link href="/admin/posts" className="btn-primary text-sm px-5 py-2 shadow-md hover:shadow-lg">
+                  Posts
                 </Link>
                 <form action="/auth/signout" method="post">
                   <button type="submit" className="text-sm font-semibold text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-all hover:scale-105">
