@@ -11,7 +11,8 @@ export async function getPublishedPosts(page: number = 1) {
 
   const { data: posts, error, count } = await supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -31,7 +32,9 @@ export async function getPublishedPosts(page: number = 1) {
           slug
         )
       )
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .eq('status', 'published')
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false })
@@ -52,7 +55,8 @@ export async function getPostBySlug(slug: string) {
 
   const { data: post, error } = await supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       *,
       profiles:author_id (
         id,
@@ -67,34 +71,11 @@ export async function getPostBySlug(slug: string) {
           slug
         )
       )
-    `)
+    `
+    )
     .eq('slug', slug)
     .eq('status', 'published')
-    .single<{
-      id: string;
-      title: string;
-      slug: string;
-      excerpt: string | null;
-      content: string;
-      featured_image: string | null;
-      published_at: string;
-      updated_at: string;
-      reading_time: number | null;
-      views: number;
-      profiles: {
-        id: string;
-        display_name: string;
-        bio: string;
-        avatar_url: string;
-      } | null;
-      post_tags: {
-        tags: {
-          id: string;
-          name: string;
-          slug: string;
-        }
-      }[];
-    }>()
+    .single()
 
   if (error) {
     console.error('Error fetching post:', error)
@@ -104,7 +85,7 @@ export async function getPostBySlug(slug: string) {
   // Increment view count (non-blocking)
   ;(async () => {
     try {
-      await supabase.rpc('increment_post_views', { post_id: post.id } as any)
+      await supabase.rpc('increment_post_views', { post_id: post.id })
     } catch (err) {
       console.error('Error incrementing post views:', err)
     }
@@ -122,7 +103,8 @@ export async function getRelatedPosts(postId: string, tagIds: string[]) {
 
   const { data: posts, error } = await supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -133,7 +115,8 @@ export async function getRelatedPosts(postId: string, tagIds: string[]) {
       post_tags!inner (
         tag_id
       )
-    `)
+    `
+    )
     .eq('status', 'published')
     .neq('id', postId)
     .in('post_tags.tag_id', tagIds)
@@ -158,7 +141,7 @@ export async function getPostsByTag(tagSlug: string, page: number = 1) {
     .from('tags')
     .select('id, name, slug')
     .eq('slug', tagSlug)
-    .single<any>()
+    .single()
 
   if (!tag) {
     return { tag: null, posts: [], count: 0, totalPages: 0 }
@@ -167,7 +150,8 @@ export async function getPostsByTag(tagSlug: string, page: number = 1) {
   // Then get posts with this tag
   const { data: posts, error, count } = await supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -182,7 +166,9 @@ export async function getPostsByTag(tagSlug: string, page: number = 1) {
       post_tags!inner (
         tag_id
       )
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .eq('status', 'published')
     .eq('post_tags.tag_id', tag.id)
     .order('published_at', { ascending: false })
@@ -217,7 +203,8 @@ export async function getPostsByAuthor(authorId: string, page: number = 1) {
   // Then get posts by this author
   const { data: posts, error, count } = await supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -232,7 +219,9 @@ export async function getPostsByAuthor(authorId: string, page: number = 1) {
           slug
         )
       )
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .eq('status', 'published')
     .eq('author_id', authorId)
     .order('published_at', { ascending: false })
@@ -255,7 +244,8 @@ export async function searchPosts(query: string, page: number = 1) {
 
   const { data: posts, error, count } = await supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -267,7 +257,9 @@ export async function searchPosts(query: string, page: number = 1) {
         display_name,
         avatar_url
       )
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .eq('status', 'published')
     .textSearch('search_vector', query)
     .order('published_at', { ascending: false })
@@ -290,7 +282,6 @@ export async function getAllTags() {
     .from('tags')
     .select('id, name, slug')
     .order('name')
-    .returns<{ id: string, name: string, slug: string }[]>()
 
   if (error) {
     console.error('Error fetching tags:', error)
@@ -306,7 +297,7 @@ export async function getPopularTags(limit: number = 10) {
   // Try optimized RPC first (requires get_popular_tags function in the DB)
   const { data, error } = await supabase.rpc('get_popular_tags', {
     limit_count: limit,
-  } as any)
+  })
 
   if (!error && data) {
     return data
@@ -314,33 +305,36 @@ export async function getPopularTags(limit: number = 10) {
 
   // Fallback: log details and use query-based implementation
   if (error) {
-    console.warn('get_popular_tags RPC failed, falling back to query-based popular tags:', {
-      message: (error as any).message,
-      details: (error as any).details,
-      hint: (error as any).hint,
-      code: (error as any).code,
-    })
+    console.warn(
+      'get_popular_tags RPC failed, falling back to query-based popular tags:',
+      {
+        message: (error as any).message,
+        details: (error as any).details,
+        hint: (error as any).hint,
+        code: (error as any).code,
+      }
+    )
   }
 
   const { data: tags, error: fallbackError } = await supabase
     .from('tags')
-    .select(`
+    .select(
+      `
       id,
       name,
       slug,
       post_tags!inner(post_id)
-    `)
+    `
+    )
 
   if (fallbackError) {
     console.error('Error fetching popular tags (fallback):', fallbackError)
     return []
   }
 
-  const tagsWithCount = (tags as any[] || []).map(tag => ({
+  const tagsWithCount = (tags || []).map(tag => ({
     ...tag,
-    post_count: Array.isArray(tag.post_tags)
-      ? tag.post_tags.length
-      : 0,
+    post_count: Array.isArray(tag.post_tags) ? tag.post_tags.length : 0,
   }))
 
   return tagsWithCount
@@ -362,8 +356,10 @@ interface PostData {
 
 export async function createPost(postData: PostData) {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('Not authenticated')
   }
@@ -371,7 +367,7 @@ export async function createPost(postData: PostData) {
   const { tagIds, ...post } = postData
 
   // Insert the post
-  const { data: newPost, error: postError } = await (supabase as any)
+  const { data: newPost, error: postError } = await supabase
     .from('posts')
     .insert({
       ...post,
@@ -392,9 +388,7 @@ export async function createPost(postData: PostData) {
       tag_id: tagId,
     }))
 
-    const { error: tagError } = await (supabase as any)
-      .from('post_tags')
-      .insert(postTags)
+    const { error: tagError } = await supabase.from('post_tags').insert(postTags)
 
     if (tagError) {
       console.error('Error adding tags:', tagError)
@@ -411,8 +405,10 @@ export async function createPost(postData: PostData) {
 
 export async function updatePost(postId: string, postData: PostData) {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('Not authenticated')
   }
@@ -420,7 +416,7 @@ export async function updatePost(postId: string, postData: PostData) {
   const { tagIds, ...post } = postData
 
   // Update the post
-  const { error: postError } = await (supabase as any)
+  const { error: postError } = await supabase
     .from('posts')
     .update(post)
     .eq('id', postId)
@@ -432,10 +428,7 @@ export async function updatePost(postId: string, postData: PostData) {
   }
 
   // Delete existing tag relationships
-  await supabase
-    .from('post_tags')
-    .delete()
-    .eq('post_id', postId)
+  await supabase.from('post_tags').delete().eq('post_id', postId)
 
   // Insert new tag relationships
   if (tagIds && tagIds.length > 0) {
@@ -444,9 +437,7 @@ export async function updatePost(postId: string, postData: PostData) {
       tag_id: tagId,
     }))
 
-    const { error: tagError } = await (supabase as any)
-      .from('post_tags')
-      .insert(postTags)
+    const { error: tagError } = await supabase.from('post_tags').insert(postTags)
 
     if (tagError) {
       console.error('Error updating tags:', tagError)
@@ -463,8 +454,10 @@ export async function updatePost(postId: string, postData: PostData) {
 
 export async function deletePost(postId: string) {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('Not authenticated')
   }

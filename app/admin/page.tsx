@@ -4,18 +4,20 @@ import Link from 'next/link'
 
 export default async function AdminPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login?redirectTo=/admin')
   }
 
-  // Get user profile (explicit row type to satisfy TypeScript)
+  // Get user profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, username, email, is_admin, display_name')
+    .select('id, display_name, is_admin')
     .eq('id', user.id)
-    .single<{ id: string; username: string | null; email: string | null; is_admin: boolean; display_name: string | null }>()
+    .single()
 
   // Get user stats
   const { count: postsCount } = await supabase
@@ -46,9 +48,7 @@ export default async function AdminPage() {
     .select('views')
     .eq('author_id', user.id)
 
-  // Help TypeScript understand the shape of the views rows even if the
-  // generated Database type doesn't explicitly define the posts table.
-  const viewsRows = (viewsData ?? []) as Array<{ views: number | null }>
+  const viewsRows = viewsData ?? []
   const totalViews = viewsRows.reduce((sum, post) => sum + (post.views ?? 0), 0)
 
   // Get recent popular posts
@@ -60,13 +60,7 @@ export default async function AdminPage() {
     .order('views', { ascending: false })
     .limit(5)
 
-  const typedPopularPosts = (popularPosts ?? []) as Array<{
-    id: string
-    title: string
-    slug: string
-    views: number | null
-    published_at: string | null
-  }>
+  const typedPopularPosts = popularPosts ?? []
 
   // Get all post IDs for this author once, and reuse for comment/bookmark counts
   const { data: authorPosts } = await supabase
@@ -74,7 +68,7 @@ export default async function AdminPage() {
     .select('id')
     .eq('author_id', user.id)
 
-  const authorPostIds = (authorPosts ?? []).map((p: any) => p.id as string)
+  const authorPostIds = (authorPosts ?? []).map(p => p.id)
 
   // Get total comment count across all posts
   const { count: allCommentsCount } = await supabase

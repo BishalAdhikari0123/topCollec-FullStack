@@ -7,8 +7,10 @@ import { normalizePostForCard } from '@/lib/utils'
 
 export async function toggleBookmark(postId: string) {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('Not authenticated')
   }
@@ -37,12 +39,10 @@ export async function toggleBookmark(postId: string) {
     return { bookmarked: false }
   } else {
     // Add bookmark
-    const { error } = await supabase
-      .from('bookmarks')
-      .insert({
-        user_id: user.id,
-        post_id: postId
-      })
+    const { error } = await supabase.from('bookmarks').insert({
+      user_id: user.id,
+      post_id: postId,
+    })
 
     if (error) {
       console.error('Error adding bookmark:', error)
@@ -56,8 +56,10 @@ export async function toggleBookmark(postId: string) {
 
 export async function isPostBookmarked(postId: string) {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     return false
   }
@@ -74,8 +76,10 @@ export async function isPostBookmarked(postId: string) {
 
 export async function getUserBookmarks(page: number = 1) {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     return { posts: [], count: 0, totalPages: 0 }
   }
@@ -85,7 +89,8 @@ export async function getUserBookmarks(page: number = 1) {
 
   const { data: bookmarks, error, count } = await supabase
     .from('bookmarks')
-    .select(`
+    .select(
+      `
       created_at,
       posts (
         id,

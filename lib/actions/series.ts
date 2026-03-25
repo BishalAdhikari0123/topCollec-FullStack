@@ -7,10 +7,11 @@ import { redirect } from 'next/navigation'
 
 export async function getAllSeries() {
   const supabase = await createClient()
-  
+
   const { data: series, error } = await supabase
     .from('series')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -23,7 +24,8 @@ export async function getAllSeries() {
         display_name,
         avatar_url
       )
-    `)
+    `
+    )
     .eq('status', 'published')
     .order('created_at', { ascending: false })
 
@@ -34,16 +36,16 @@ export async function getAllSeries() {
 
   // Get post count for each series
   const seriesWithCounts = await Promise.all(
-    (series || []).map(async (s) => {
+    (series || []).map(async s => {
       const { count } = await supabase
         .from('posts')
         .select('*', { count: 'exact', head: true })
         .eq('series_id', s.id)
         .eq('status', 'published')
-      
+
       return {
         ...s,
-        post_count: count || 0
+        post_count: count || 0,
       }
     })
   )
@@ -53,10 +55,11 @@ export async function getAllSeries() {
 
 export async function getSeriesBySlug(slug: string) {
   const supabase = await createClient()
-  
+
   const { data: series, error } = await supabase
     .from('series')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -71,9 +74,10 @@ export async function getSeriesBySlug(slug: string) {
         bio,
         avatar_url
       )
-    `)
+    `
+    )
     .eq('slug', slug)
-    .single<any>()
+    .single()
 
   if (error) {
     console.error('Error fetching series:', error)
@@ -85,10 +89,11 @@ export async function getSeriesBySlug(slug: string) {
 
 export async function getSeriesPosts(seriesId: string) {
   const supabase = await createClient()
-  
+
   const { data: posts, error } = await supabase
     .from('posts')
-    .select(`
+    .select(
+      `
       id,
       title,
       slug,
@@ -98,11 +103,11 @@ export async function getSeriesPosts(seriesId: string) {
       series_order,
       reading_time,
       views
-    `)
+    `
+    )
     .eq('series_id', seriesId)
     .eq('status', 'published')
     .order('series_order', { ascending: true })
-    .returns<{ id: string, title: string, slug: string, excerpt: string | null, featured_image: string | null, published_at: string, series_order: number | null, reading_time: number | null, views: number }[]>()
 
   if (error) {
     console.error('Error fetching series posts:', error)
@@ -114,7 +119,7 @@ export async function getSeriesPosts(seriesId: string) {
 
 export async function getPostSeriesNavigation(postId: string) {
   const supabase = await createClient()
-  
+
   // Get current post's series info
   const { data: post } = await supabase
     .from('posts')
@@ -153,13 +158,15 @@ export async function getPostSeriesNavigation(postId: string) {
     next: nextPost,
     currentOrder: post.series_order,
     currentIndex: currentIndex + 1,
-    totalPosts
+    totalPosts,
   }
 }
 
 export async function createSeries(formData: FormData) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login')
@@ -168,7 +175,7 @@ export async function createSeries(formData: FormData) {
   const title = formData.get('title') as string
   const description = formData.get('description') as string
   const coverImage = formData.get('cover_image') as string
-  
+
   // Generate slug from title
   const slug = title
     .toLowerCase()
@@ -183,7 +190,7 @@ export async function createSeries(formData: FormData) {
       slug,
       description,
       cover_image: coverImage || null,
-      status: 'published'
+      status: 'published',
     })
     .select()
     .single()
@@ -199,7 +206,9 @@ export async function createSeries(formData: FormData) {
 
 export async function updateSeries(seriesId: string, formData: FormData) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login')
@@ -215,7 +224,7 @@ export async function updateSeries(seriesId: string, formData: FormData) {
       title,
       description,
       cover_image: coverImage || null,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', seriesId)
     .eq('author_id', user.id)
@@ -230,7 +239,9 @@ export async function updateSeries(seriesId: string, formData: FormData) {
 
 export async function deleteSeries(seriesId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login')

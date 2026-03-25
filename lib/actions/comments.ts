@@ -7,60 +7,73 @@ import { redirect } from 'next/navigation'
 
 export async function getCommentsByPostId(postId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Try with profiles join first
   let { data: comments, error } = await supabase
     .from('comments')
-    .select(`
+    .select(
+      `
       id,
       body,
       created_at,
       author_name,
-      author_email,
       author_id,
       is_approved,
       parent_id,
       profiles:author_id (
-        name,
+        display_name,
         avatar_url
       )
-    `)
+    `
+    )
     .eq('post_id', postId)
     .eq('is_approved', true)
     .order('created_at', { ascending: true })
 
   // If profiles join fails, try without it
   if (error) {
-    console.warn('Profiles join failed, fetching comments without profiles:', error.message)
+    console.warn(
+      'Profiles join failed, fetching comments without profiles:',
+      error.message
+    )
     const result = await supabase
       .from('comments')
-      .select(`
+      .select(
+        `
         id,
         body,
         created_at,
         author_name,
-        author_email,
         author_id,
         is_approved,
         parent_id
-      `)
+      `
+      )
       .eq('post_id', postId)
       .eq('is_approved', true)
       .order('created_at', { ascending: true })
-    
+
     // Add empty profiles array to match expected type
     comments = result.data?.map(comment => ({ ...comment, profiles: [] })) || []
     error = result.error
-    
+
     if (error) {
       console.error('Error fetching comments:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
-        code: error.code
+        code: error.code,
       })
-      return { comments: [], likes: [], userLikes: [], currentUserId: null, postAuthorId: null }
+      return {
+        comments: [],
+        likes: [],
+        userLikes: [],
+        currentUserId: null,
+        postAuthorId: null,
+      }
     }
   }
 
@@ -68,7 +81,7 @@ export async function getCommentsByPostId(postId: string) {
   const commentIds = comments?.map(c => c.id) || []
   let likes: Array<{ comment_id: string; is_like: boolean }> = []
   let userLikes: Array<{ comment_id: string; is_like: boolean }> = []
-  
+
   // Only fetch likes if comment_likes table exists (graceful fallback)
   try {
     const { data: likesData } = await supabase
@@ -87,7 +100,9 @@ export async function getCommentsByPostId(postId: string) {
       userLikes = userLikesData || []
     }
   } catch {
-    console.warn('comment_likes table not found - likes feature disabled. Run migration to enable.')
+    console.warn(
+      'comment_likes table not found - likes feature disabled. Run migration to enable.'
+    )
   }
 
   // Get post author ID to highlight their comments

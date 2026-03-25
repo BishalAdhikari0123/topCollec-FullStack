@@ -4,6 +4,8 @@ import './globals.css'
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from '@/lib/constants'
 import ClientHeader from '@/components/ClientHeader'
 import Footer from '@/components/Footer'
+import BackToTop from '@/components/BackToTop'
+import AuthorReaderToggle from '@/components/AuthorReaderToggle'
 import { ThemeProvider } from '@/components/ThemeProvider'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -62,11 +64,15 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col">
+          <div className="flex flex-col min-h-screen">
             <ClientHeader />
-            <main className="flex-1">{children}</main>
+            <div className="fixed bottom-4 right-4 z-50">
+              <AuthorReaderToggle />
+            </div>
+            <main className="flex-grow">{children}</main>
             <Footer />
           </div>
+          <BackToTop />
         </ThemeProvider>
       </body>
     </html>

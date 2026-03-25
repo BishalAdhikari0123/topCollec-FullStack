@@ -4,7 +4,9 @@ import { PostEditor } from '@/components/admin'
 
 export default async function NewPostPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login?redirectTo=/admin/posts/new')
@@ -15,17 +17,14 @@ export default async function NewPostPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single<{ is_admin: boolean | null }>()
+    .single()
 
   if (!profile?.is_admin) {
     redirect('/')
   }
 
   // Get all tags for the editor
-  const { data: tags } = await supabase
-    .from('tags')
-    .select('*')
-    .order('name')
+  const { data: tags } = await supabase.from('tags').select('*').order('name')
 
   // Get all series by this author
   const { data: series } = await supabase

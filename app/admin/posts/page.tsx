@@ -6,7 +6,9 @@ import DeletePostButton from '@/components/admin/DeletePostButton'
 
 export default async function AdminPostsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login?redirectTo=/admin/posts')
@@ -17,7 +19,7 @@ export default async function AdminPostsPage() {
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single<{ is_admin: boolean | null }>()
+    .single()
 
   if (!profile?.is_admin) {
     redirect('/')
@@ -29,7 +31,7 @@ export default async function AdminPostsPage() {
     .eq('author_id', user.id)
     .order('created_at', { ascending: false })
 
-  const postsList = (posts ?? []) as any[]
+  const postsList = posts ?? []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900/30 dark:to-neutral-950">

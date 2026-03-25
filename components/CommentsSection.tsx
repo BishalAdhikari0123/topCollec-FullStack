@@ -6,7 +6,7 @@ import { likeComment, deleteComment, createCommentAction } from '@/lib/actions/c
 import { formatDistanceToNow } from 'date-fns'
 
 interface Profile {
-  name: string
+  display_name: string
   avatar_url: string | null
 }
 
@@ -15,7 +15,7 @@ interface Comment {
   body: string
   created_at: string
   author_name: string
-  author_email: string
+  author_email?: string
   author_id: string | null
   parent_id: string | null
   profiles: Profile | Profile[] | null
@@ -113,7 +113,7 @@ function CommentItem({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
               <h4 className="font-bold text-black dark:text-white text-lg">
-                {profile?.name || comment.author_name}
+                {profile?.display_name || comment.author_name}
               </h4>
               <span className="text-neutral-500 dark:text-neutral-400 text-sm font-medium">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
@@ -161,7 +161,7 @@ function CommentItem({
               {/* Reply */}
               {!isReply && currentUserId && (
                 <button
-                  onClick={() => onReply(comment.id, profile?.name || comment.author_name)}
+                  onClick={() => onReply(comment.id, profile?.display_name || comment.author_name)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all font-bold text-sm"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

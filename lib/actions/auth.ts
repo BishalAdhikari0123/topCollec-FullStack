@@ -38,15 +38,10 @@ export async function signUp(formData: FormData) {
   }
 
   // Create profile
-  const { error: profileError } = await supabase
-    .from('profiles' as any)
-    .insert({
-      id: authData.user.id,
-      display_name: name,
-      bio: null,
-      avatar_url: null,
-      is_admin: false,
-    })
+  const { error: profileError } = await supabase.from('profiles').insert({
+    id: authData.user.id,
+    display_name: name,
+  })
 
   if (profileError) {
     console.error('Profile creation error:', profileError)
@@ -78,13 +73,13 @@ export async function signIn(formData: FormData) {
 
   // Check if user is admin
   const { data: profile } = await supabase
-    .from('profiles' as any)
+    .from('profiles')
     .select('is_admin')
     .eq('id', data.user.id)
     .single()
 
   revalidatePath('/', 'layout')
-  
+
   if (profile?.is_admin) {
     redirect('/admin')
   } else {

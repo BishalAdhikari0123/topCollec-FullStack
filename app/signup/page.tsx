@@ -115,6 +115,43 @@ export default async function SignUpPage({
             </div>
           </form>
 
+          <div className="mt-6 relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-neutral-300 dark:border-neutral-700" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-neutral-900 text-neutral-500 dark:text-neutral-400">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <form action="/auth/google" method="post">
+              <button
+                type="submit"
+                className="w-full inline-flex justify-center py-3 px-4 border border-neutral-300 dark:border-neutral-700 rounded-lg shadow-sm bg-white dark:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  aria-hidden="true"
+                  focusable="false"
+                  data-prefix="fab"
+                  data-icon="google"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 488 512"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M488 261.8C488 403.3 381.5 512 244 512 110.3 512 0 401.7 0 265.2 0 128.5 110.3 18.2 244 18.2c73.4 0 135.3 29.2 181.4 73.9l-64.5 64.5c-26.4-25-62.3-40.6-116.9-40.6-93.3 0-169.5 76.2-169.5 169.5s76.2 169.5 169.5 169.5c106.3 0 143.5-84.3 148.9-125.8H244v-89.8h244z"
+                  ></path>
+                </svg>
+                Sign up with Google
+              </button>
+            </form>
+          </div>
+
           <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800 text-center">
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
               Already have an account?{' '}

@@ -2,10 +2,16 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PostEditor } from '@/components/admin'
 
-export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function EditPostPage({
+  params,
+}: {
+  params: { id: string }
+}) {
+  const { id } = params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login?redirectTo=/admin/posts')
@@ -16,7 +22,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single<{ is_admin: boolean | null }>()
+    .single()
 
   if (!profile?.is_admin) {
     redirect('/')
@@ -28,17 +34,14 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     .select('*, post_tags(tag_id)')
     .eq('id', id)
     .eq('author_id', user.id)
-    .single<any>()
+    .single()
 
   if (!post) {
     notFound()
   }
 
   // Get all tags
-  const { data: tags } = await supabase
-    .from('tags')
-    .select('*')
-    .order('name')
+  const { data: tags } = await supabase.from('tags').select('*').order('name')
 
   // Get all series by this author
   const { data: series } = await supabase
@@ -48,7 +51,8 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     .order('title')
 
   // Extract selected tag IDs
-  const selectedTagIds = post.post_tags?.map((pt: { tag_id: string }) => pt.tag_id) || []
+  const selectedTagIds =
+    post.post_tags?.map((pt: { tag_id: string }) => pt.tag_id) || []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900/30 dark:to-neutral-950">

@@ -12,7 +12,9 @@ export const metadata = {
 
 export default async function CommentsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login?redirectTo=/admin/comments')
@@ -23,17 +25,12 @@ export default async function CommentsPage() {
     .from('profiles')
     .select('is_admin, id, display_name')
     .eq('id', user!.id)
-    // Help TypeScript understand the shape of this row even if
-    // the generated Database type is incomplete.
-    .single<{ id: string; is_admin: boolean | null }>()
+    .single()
 
   if (profileError) {
-    // TypeScript can struggle to infer the correct Insert type from the
-    // generated Database schema here, but at runtime this insert is valid.
-    // Cast to any to avoid a build-time type error while keeping behavior.
-    await (supabase as any)
-      .from('profiles')
-      .insert([{ id: user!.id, is_admin: false }])
+    console.error('Error fetching profile:', profileError)
+    // This might happen if the profile doesn't exist yet for a new user.
+    // Redirecting to home might be a safe fallback.
     redirect('/')
   }
 
@@ -42,10 +39,10 @@ export default async function CommentsPage() {
   }
 
   // Get all comments with post info
-  let allComments: CommentData[] = []
   const { data: comments, error: commentsError } = await supabase
     .from('comments')
-    .select(`
+    .select(
+      `
       id,
       body,
       created_at,
@@ -57,36 +54,19 @@ export default async function CommentsPage() {
         slug
       ),
       profiles:author_id (
-        name,
+        display_name,
         avatar_url
       )
-    `)
+    `
+    )
     .order('created_at', { ascending: false })
     .limit(100)
 
   if (commentsError) {
-    const result = await supabase
-      .from('comments')
-      .select(`
-        id,
-        body,
-        created_at,
-        author_name,
-        is_approved,
-        posts (
-          id,
-          title,
-          slug
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(100)
-
-    const baseComments = (result.data ?? []) as any[]
-    allComments = baseComments.map(c => ({ ...c, profiles: [] as any[] }))
-  } else {
-    allComments = comments || []
+    console.error('Error fetching comments:', commentsError)
   }
+
+  const allComments = comments || []
 
   // Comment likes count
   let likesData: Array<{ comment_id: string; is_like: boolean }> = []
@@ -113,7 +93,7 @@ interface CommentData {
   author_name: string
   is_approved: boolean
   posts: Array<{ id: string; title: string; slug: string }>
-  profiles: Array<{ name: string; avatar_url: string | null }>
+  profiles: Array<{ display_name: string; avatar_url: string | null }>
 }
 
   const pendingComments = allComments.filter(c => !c.is_approved)
@@ -217,7 +197,7 @@ const approvedComments = allComments.filter(c => c.is_approved)
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-2">
                           <h4 className="font-black text-neutral-900 dark:text-neutral-50 text-lg">
-                            {profile?.name || comment.author_name}
+                            {profile?.display_name || comment.author_name}
                           </h4>
                           <span className="text-neutral-500 dark:text-neutral-400 text-sm">
                             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
@@ -316,7 +296,7 @@ const approvedComments = allComments.filter(c => c.is_approved)
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-2">
                           <h4 className="font-black text-neutral-900 dark:text-neutral-50 text-lg">
-                            {profile?.name || comment.author_name}
+                            {profile?.display_name || comment.author_name}
                           </h4>
                           <span className="text-neutral-500 dark:text-neutral-400 text-sm">
                             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
